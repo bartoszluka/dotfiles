@@ -43,6 +43,9 @@ if status is-interactive # Commands to run in interactive sessions can go here
     abbr --add kl killall
     abbr --add chx 'chmod +x'
 
+    # run matlab from the commandline (the only way it works for some reason)
+    abbr --add matl 'matlab &> /dev/null & disown'
+
     # ctrl+o goes back a directory
     bind \co 'prevd; commandline -f repaint'
     fish_add_path --path ~/.local/bin/
@@ -102,5 +105,17 @@ if status is-interactive # Commands to run in interactive sessions can go here
 
     # for sumo
     set -g SUMO_HOME /usr/share/sumo
+    set -g NEOVIDE_MULTIGRID true
     alias ls exa
+
+    # >>> conda initialize >>>
+    # !! Contents within this block are managed by 'conda init' !!
+    function conda-start
+        if test -f /opt/miniconda3/bin/conda
+            eval /opt/miniconda3/bin/conda "shell.fish" hook $argv | source
+        end
+    end
+    # <<< conda initialize <<<
+
+
 end
