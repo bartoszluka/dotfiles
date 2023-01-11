@@ -42,12 +42,11 @@ if status is-interactive # Commands to run in interactive sessions can go here
 
     abbr --add kl killall
     abbr --add chx 'chmod +x'
+    abbr --add keyring 'paru -Sy archlinux-keyring'
 
     # run matlab from the commandline (the only way it works for some reason)
     abbr --add matl 'matlab &> /dev/null & disown'
 
-    # ctrl+o goes back a directory
-    bind \co 'prevd; commandline -f repaint'
     fish_add_path --path ~/.local/bin/
     fish_add_path --path ~/.cabal/bin/
     fish_add_path --path ~/.ghcup/bin/
@@ -57,8 +56,8 @@ if status is-interactive # Commands to run in interactive sessions can go here
     set -gx PAGER less
 
     # set lvim as editor
-    set -gx EDITOR lvim
-    set -gx VISUAL lvim
+    set -gx EDITOR nvim
+    set -gx VISUAL nvim
 
     # prettify help printing
     alias bathelp 'bat --plain --language=help'
@@ -78,7 +77,13 @@ if status is-interactive # Commands to run in interactive sessions can go here
     # set -x THEFUCK_OVERRIDEN_ALIASES 'gsed,git'
 
     # set -g fish_key_bindings fish_hybrid_key_bindings
-    set -g fish_vi_key_bindings
+    set -g fish_key_bindings fish_vi_key_bindings
+
+    # ctrl+o goes back a directory in normal and insert mode
+    for mode in default insert
+        bind -M $mode \co 'prevd; commandline -f repaint'
+    end
+    bind -M insert \cf 'forward-char'
 
     # speed up keyboard input
     # xset r rate 220 30

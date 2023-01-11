@@ -33,7 +33,19 @@ require("packer").startup(function(use)
     use({
         "nmac427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically (replaces vim-sleuth)
         config = function()
-            require("guess-indent").setup({})
+            require("guess-indent").setup({
+                auto_cmd = true, -- Set to false to disable automatic execution
+                filetype_exclude = { -- A list of filetypes for which the auto command gets disabled
+                    "netrw",
+                    "tutor",
+                },
+                buftype_exclude = { -- A list of buffer types for which the auto command gets disabled
+                    "help",
+                    "nofile",
+                    "terminal",
+                    "prompt",
+                },
+            })
         end,
     })
 
@@ -43,20 +55,7 @@ require("packer").startup(function(use)
     -- Fuzzy Finder Algorithm which requires local dependencies to be built. Only load if `make` is available
     use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make", cond = vim.fn.executable("make") == 1 })
 
-    use({
-        "shaunsingh/nord.nvim",
-        config = function()
-            vim.g.nord_contrast = false --	Make sidebars and popup menus like nvim-tree and telescope have a different background
-            vim.g.nord_borders = true --	Enable the border between verticaly split windows visable
-            vim.g.nord_disable_background = true --	Disable the setting of background color so that NeoVim can use your terminal background
-            vim.g.nord_cursorline_transparent = false --	Set the cursorline transparent/visible
-            vim.g.nord_enable_sidebar_background = true --	Re-enables the background of the sidebar if you disabled the background of everything
-            vim.g.nord_italic = false --	enables/disables italics
-            vim.g.nord_uniform_diff_background = false --	enables/disables colorful backgrounds when used in diff mode
-            -- Load the colorscheme
-            -- require("nord").set()
-        end,
-    })
+    use({ "shaunsingh/nord.nvim" })
     -- use({ "mhartington/formatter.nvim" }) -- formatting
     use({
         "jose-elias-alvarez/null-ls.nvim",
@@ -101,12 +100,18 @@ require("packer").startup(function(use)
                 -- Configuration here, or leave empty to use defaults
                 highlight = { duration = 200 },
                 aliases = {
-                    ["a"] = "<",
-                    ["b"] = "(",
-                    ["B"] = "{",
-                    ["r"] = "[",
+                    ["a"] = ">",
+                    ["b"] = ")",
+                    ["B"] = "}",
+                    ["r"] = "}",
                     ["q"] = { '"', "'", "`" },
-                    ["s"] = { "{", "[", "(", "<", '"', "'", "`" },
+                    ["s"] = { "{", "[", "(", ">", '"', "'", "`" },
+                    -- ["a"] = "<",
+                    -- ["b"] = "(",
+                    -- ["B"] = "{",
+                    -- ["r"] = "[",
+                    -- ["q"] = { '"', "'", "`" },
+                    -- ["s"] = { "{", "[", "(", "<", '"', "'", "`" },
                 },
             })
         end,
@@ -130,43 +135,43 @@ require("packer").startup(function(use)
         end,
     })
     -- use({
-    -- 	"Pocco81/true-zen.nvim",
-    -- 	config = function()
-    -- 		require("true-zen").setup({
-    -- 			modes = { -- configurations per mode
-    -- 				ataraxis = {
-    -- 					shade = "dark", -- if `dark` then dim the padding windows, otherwise when it's `light` it'll brighten said windows
-    -- 					backdrop = 0, -- percentage by which padding windows should be dimmed/brightened. Must be a number between 0 and 1. Set to 0 to keep the same background color
-    -- 					minimum_writing_area = { -- minimum size of main window
-    -- 						width = 100,
-    -- 						height = 44,
-    -- 					},
-    -- 					quit_untoggles = false, -- type :q or :qa to quit Ataraxis mode
-    -- 					padding = {
-    -- 						right = 40,
-    -- 						left = 40,
-    -- 						top = 0,
-    -- 						bottom = 0,
-    -- 					},
-    -- 					callbacks = {
-    -- 						open_pos = function()
-    -- 							vim.wo.number = true
-    -- 							vim.o.relativenumber = true
-    -- 						end,
-    -- 					},
-    -- 				},
-    -- 			},
-    -- 			integrations = {
-    -- 				tmux = false, -- hide tmux status bar in (minimalist, ataraxis)
-    -- 				kitty = { -- increment font size in Kitty. Note: you must set `allow_remote_control socket-only` and `listen_on unix:/tmp/kitty` in your personal config (ataraxis)
-    -- 					enabled = false,
-    -- 					font = "+3",
-    -- 				},
-    -- 				twilight = false, -- enable twilight (ataraxis)
-    -- 				lualine = false, -- hide nvim-lualine (ataraxis)
-    -- 			},
-    -- 		})
-    -- 	end,
+    --     "Pocco81/true-zen.nvim",
+    --     config = function()
+    --         require("true-zen").setup({
+    --             modes = { -- configurations per mode
+    --                 ataraxis = {
+    --                     shade = "dark", -- if `dark` then dim the padding windows, otherwise when it's `light` it'll brighten said windows
+    --                     backdrop = 0, -- percentage by which padding windows should be dimmed/brightened. Must be a number between 0 and 1. Set to 0 to keep the same background color
+    --                     minimum_writing_area = { -- minimum size of main window
+    --                         width = 100,
+    --                         height = 44,
+    --                     },
+    --                     quit_untoggles = false, -- type :q or :qa to quit Ataraxis mode
+    --                     padding = {
+    --                         right = 40,
+    --                         left = 40,
+    --                         top = 0,
+    --                         bottom = 0,
+    --                     },
+    --                     callbacks = {
+    --                         open_pos = function()
+    --                             vim.wo.number = true
+    --                             vim.o.relativenumber = true
+    --                         end,
+    --                     },
+    --                 },
+    --             },
+    --             integrations = {
+    --                 tmux = false, -- hide tmux status bar in (minimalist, ataraxis)
+    --                 kitty = { -- increment font size in Kitty. Note: you must set `allow_remote_control socket-only` and `listen_on unix:/tmp/kitty` in your personal config (ataraxis)
+    --                     enabled = false,
+    --                     font = "+3",
+    --                 },
+    --                 twilight = false, -- enable twilight (ataraxis)
+    --                 lualine = false, -- hide nvim-lualine (ataraxis)
+    --             },
+    --         })
+    --     end,
     -- })
 
     use({
@@ -285,6 +290,20 @@ require("packer").startup(function(use)
         },
         -- tag = 'x.y.z' -- [^1]
     })
+    use("nvim-treesitter/playground")
+    use("RRethy/vim-illuminate")
+    use("folke/zen-mode.nvim")
+    use("lervag/vimtex")
+    use({
+        "folke/which-key.nvim",
+        config = function()
+            require("which-key").setup({
+                -- your configuration comes here
+                -- or leave it empty to use the default settings
+                -- refer to the configuration section below
+            })
+        end,
+    })
     -- end plugins
     if is_bootstrap then
         require("packer").sync()
@@ -292,6 +311,7 @@ require("packer").startup(function(use)
 end)
 require("bartek.alpha")
 require("bartek.project")
+require("bartek.zen-mode")
 
 local nlspsettings = require("nlspsettings")
 
@@ -302,6 +322,7 @@ nlspsettings.setup({
     append_default_schemas = true,
     loader = "json",
 })
+
 require("bartek.haskell-tools")
 
 require("telescope").load_extension("projects")
@@ -338,7 +359,7 @@ vim.o.hlsearch = false
 
 -- Make line numbers default
 vim.wo.number = true
-vim.wo.wrap = false
+-- vim.wo.wrap = false
 vim.o.relativenumber = true
 
 -- Enable mouse mode
@@ -359,9 +380,17 @@ vim.o.updatetime = 250
 vim.wo.signcolumn = "yes"
 vim.wo.cursorline = true
 
--- Set colorscheme
 vim.o.termguicolors = true
--- vim.cmd("colorscheme nord")
+
+-- Set colorscheme
+vim.g.nord_contrast = true -- Make sidebars and popup menus like nvim-tree and telescope have a different background
+vim.g.nord_borders = true -- Enable the border between verticaly split windows visable
+vim.g.nord_disable_background = false -- Disable the setting of background color so that NeoVim can use your terminal background
+vim.g.nord_cursorline_transparent = false -- Set the cursorline transparent/visible
+vim.g.nord_enable_sidebar_background = false -- Re-enables the background of the sidebar if you disabled the background of everything
+vim.g.nord_italic = false -- enables/disables italics
+vim.g.nord_uniform_diff_background = false -- enables/disables colorful backgrounds when used in diff mode
+vim.g.nord_bold = false -- enables/disables bold
 require("nord").set()
 
 -- Set completeopt to have a better completion experience
@@ -374,7 +403,7 @@ vim.o.completeopt = "menuone,noselect"
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.keymap.set({ "n", "v", "o" }, "L", "$", { silent = true })
-vim.keymap.set({ "n", "v", "o" }, "H", "^", { silent = true })
+vim.keymap.set({ "n", "v", "o" }, "H", "0", { silent = true })
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
 vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
@@ -411,7 +440,7 @@ require("Comment").setup()
 -- Enable `lukas-reineke/indent-blankline.nvim`
 -- See `:help indent_blankline.txt`
 require("indent_blankline").setup({
-    char = "|",
+    char = "▏",
     -- char = "┊",
     show_trailing_blankline_indent = false,
 })
@@ -430,12 +459,24 @@ require("gitsigns").setup({
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
-require("telescope").setup({
+local telescope = require("telescope")
+local actions = require("telescope.actions")
+telescope.setup({
     defaults = {
         mappings = {
             i = {
                 ["<C-u>"] = false,
                 ["<C-d>"] = false,
+                ["<C-j>"] = {
+                    actions.move_selection_next,
+                    type = "action",
+                    opts = { nowait = true, silent = true },
+                },
+                ["<C-k>"] = {
+                    actions.move_selection_previous,
+                    type = "action",
+                    opts = { nowait = true, silent = true },
+                },
             },
         },
     },
@@ -524,11 +565,12 @@ require("nvim-treesitter.configs").setup({
 })
 
 -- Diagnostic keymaps
-vim.keymap.set("n", "<leader>lk", vim.diagnostic.goto_prev)
-vim.keymap.set("n", "<leader>lj", vim.diagnostic.goto_next)
-vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
+vim.keymap.set("n", "<leader>lk", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
+vim.keymap.set("n", "<leader>lj", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+-- vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
 -- vim.keymap.set("n", "<leader>w", "<cmd>:w<CR>", { desc = "Write file" })
 vim.keymap.set("n", "<leader>q", "<cmd>:q<CR>", { desc = "Quit" })
+vim.keymap.set("n", "<leader>x", "<cmd>:Bdelete<CR>", { desc = "Close buffer" })
 
 -- LSP settings.
 --  This function gets run when an LSP connects to a particular buffer.
@@ -555,6 +597,7 @@ local on_attach = function(_, bufnr)
     nmap("<leader>ls", require("telescope.builtin").lsp_document_symbols, "[D]ocument [S]ymbols")
     nmap("<leader>lS", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace [S]ymbols")
 
+    -- this might be wrong
     vim.api.nvim_buf_create_user_command(bufnr, "Format", function(_)
         if vim.lsp.buf.format then
             vim.lsp.buf.format()
@@ -563,7 +606,6 @@ local on_attach = function(_, bufnr)
         end
     end, { desc = "Format current buffer with LSP" })
     nmap("<leader>f", "<cmd>:Format<CR>", "Format file")
-
     -- See `:help K` for why this keymap
     nmap("K", vim.lsp.buf.hover, "Hover Documentation")
     nmap("gh", vim.lsp.buf.signature_help, "Signature Documentation")
@@ -627,8 +669,6 @@ require("lspconfig").sumneko_lua.setup({
         },
     },
 })
-
-require("lspconfig").pyright.setup({})
 -- nvim-cmp setup
 local cmp = require("cmp")
 local luasnip = require("luasnip")
@@ -670,16 +710,17 @@ cmp.setup({
 })
 
 -- MINE
-vim.go.guifont = "FiraCode Nerd Font Mono:h10"
+vim.go.guifont = "FiraCode Nerd Font Mono:h9"
 vim.go.guicursor = "n-v-sm:block,i-c-ci-ve:ver25,r-cr-o:hor20"
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.go.showmode = false
 vim.cmd("set foldlevel=999")
 
 -- local fold_group = vim.api.nvim_creatfish_indente_augroup("FoldGroup", { clear = true })
 -- vim.api.nvim_create_autocmd(
--- 	{ "BufReadPost", "FileReadPost" },
--- 	{ pattern = "*", command = "normal zR", group = fold_group }
+--  { "BufReadPost", "FileReadPost" },
+--  { pattern = "*", command = "normal zR", group = fold_group }
 -- )
 --
 -- Utilities for creating configurations
@@ -724,56 +765,65 @@ local matlab_formatter_py = {
 null_ls.register({
     helpers.make_builtin(matlab_formatter_py),
     helpers.make_builtin(mh_style),
+    null_ls.builtins.formatting.latexindent,
+    null_ls.builtins.formatting.black,
+    -- null_ls.builtins.formatting.isort,
+    null_ls.builtins.diagnostics.fish,
+    null_ls.builtins.formatting.fish_indent,
+    null_ls.builtins.formatting.stylua,
+    null_ls.builtins.formatting.latexindent,
+    null_ls.builtins.formatting.prettierd,
 })
 
 null_ls.setup({
-    sources = {
-        null_ls.builtins.formatting.latexindent,
-        null_ls.builtins.formatting.black,
-        null_ls.builtins.formatting.isort,
-        null_ls.builtins.diagnostics.fish,
-        null_ls.builtins.formatting.fish_indent,
-        null_ls.builtins.formatting.stylua,
-        null_ls.builtins.formatting.latexindent,
-        null_ls.builtins.formatting.prettierd,
-    },
+    on_attach = function(_, bufnr)
+        vim.api.nvim_buf_create_user_command(bufnr, "Format", function(_)
+            if vim.lsp.buf.format then
+                vim.lsp.buf.format()
+            elseif vim.lsp.buf.formatting then
+                vim.lsp.buf.formatting()
+            end
+        end, { desc = "Format current buffer with LSP" })
+        vim.keymap.set("n", "<leader>f", "<cmd>:Format<CR>", { buffer = bufnr, desc = "Format file" })
+    end,
 })
+
 -- require("formatter").setup({
--- 	-- Enable or disable logging
--- 	logging = true,
--- 	-- Set the log level
--- 	log_level = vim.log.levels.WARN,
--- 	-- All formatter configurations are opt-in
--- 	filetype = {
--- 		-- Formatter configurations for filetype "lua" go here
--- 		-- and will be executed in order
--- 		lua = {
--- 			-- "formatter.filetypes.lua" defines default configurations for the
--- 			-- "lua" filetype
--- 			require("formatter.filetypes.lua").stylua,
--- 		},
--- 		python = {
--- 			require("formatter.filetypes.python").isort,
--- 			require("formatter.filetypes.python").black,
--- 			function()
--- 				return {
--- 					exe = "black",
--- 					args = { "-l 120", "-q", "-" },
--- 					stdin = true,
--- 				}
--- 			end,
--- 		},
--- 		fish = { require("formatter.filetypes.fish").fishindent },
--- 		-- haskell = { require("formatter.filetypes.haskell") },
+--  -- Enable or disable logging
+--  logging = true,
+--  -- Set the log level
+--  log_level = vim.log.levels.WARN,
+--  -- All formatter configurations are opt-in
+--  filetype = {
+--   -- Formatter configurations for filetype "lua" go here
+--   -- and will be executed in order
+--   lua = {
+--    -- "formatter.filetypes.lua" defines default configurations for the
+--    -- "lua" filetype
+--    require("formatter.filetypes.lua").stylua,
+--   },
+--   python = {
+--    require("formatter.filetypes.python").isort,
+--    require("formatter.filetypes.python").black,
+--    function()
+--     return {
+--      exe = "black",
+--      args = { "-l 120", "-q", "-" },
+--      stdin = true,
+--     }
+--    end,
+--   },
+--   fish = { require("formatter.filetypes.fish").fishindent },
+--   -- haskell = { require("formatter.filetypes.haskell") },
 --
--- 		-- Use the special "*" filetype for defining formatter configurations on
--- 		-- any filetype
--- 		-- ["*"] = {
--- 		--   -- "formatter.filetypes.any" defines default configurations for any
--- 		--   -- filetype
--- 		--   require("formatter.filetypes.any").remove_trailing_whitespace
--- 		-- }
--- 	},
+--   -- Use the special "*" filetype for defining formatter configurations on
+--   -- any filetype
+--   -- ["*"] = {
+--   --   -- "formatter.filetypes.any" defines default configurations for any
+--   --   -- filetype
+--   --   require("formatter.filetypes.any").remove_trailing_whitespace
+--   -- }
+--  },
 -- })
 
 vim.cmd("set clipboard=unnamedplus")
@@ -818,7 +868,7 @@ vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle fil
 -- vim.keymap.set("n", "<leader>c", "<cmd>TZAtaraxis<CR>", { desc = "Center buffer" })
 -- vim.keymap.set("n", "<leader>u", "g~l", { desc = "Swap case" })
 --
--- vim.opt.expandtab = true -- Use spaces instead of tabs
+vim.opt.expandtab = true -- Use spaces instead of tabs
 vim.opt.hidden = true -- Enable background buffers
 -- vim.opt.ignorecase = true -- Ignore case
 vim.opt.joinspaces = false -- No double spaces with join
@@ -827,7 +877,7 @@ vim.opt.list = true -- Show some invisible characters
 -- vim.opt.relativenumber = true -- Relative line numbers
 vim.opt.scrolloff = 4 -- Lines of context
 -- vim.opt.shiftround = true -- Round indent
--- vim.opt.shiftwidth = 2 -- Size of an indent
+vim.opt.shiftwidth = 4 -- Size of an indent
 vim.opt.sidescrolloff = 8 -- Columns of context
 -- vim.opt.smartcase = true -- Do not ignore case with capitals
 -- vim.opt.smartindent = true -- Insert indents automatically
@@ -835,7 +885,7 @@ vim.opt.splitbelow = true -- Put new windows below current
 vim.opt.splitright = true -- Put new windows right of current
 -- vim.opt.tabstop = 2 -- Number of spaces tabs count for
 -- vim.opt.termguicolors = true -- True color support
--- vim.opt.wrap = false -- Disable line wrap
+vim.opt.wrap = false -- Disable line wrap
 --
 -- vim.opt.wildmode = { "list", "longest" } -- Command-line completion mode
 -- The line beneath this is called `modeline`. See `:help modeline`
