@@ -47,9 +47,15 @@ if status is-interactive # Commands to run in interactive sessions can go here
     # run matlab from the commandline (the only way it works for some reason)
     abbr --add matl 'matlab &> /dev/null & disown'
 
+    # hoogle and haddock
+    abbr --add gen-hoogle 'stack test --fast --haddock-deps && stack hoogle -- generate --local'
+    abbr --add hg 'stack hoogle -- server --local --port=8080'
+
     fish_add_path --path ~/.local/bin/
     fish_add_path --path ~/.cabal/bin/
     fish_add_path --path ~/.ghcup/bin/
+    fish_add_path --path ~/.ghcup/bin/
+    fish_add_path --path /home/linuxbrew/.linuxbrew/bin
 
     # bat as a manpager
     set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
@@ -83,7 +89,7 @@ if status is-interactive # Commands to run in interactive sessions can go here
     for mode in default insert
         bind -M $mode \co 'prevd; commandline -f repaint'
     end
-    bind -M insert \cf 'forward-char'
+    bind -M insert \cf forward-char
 
     # speed up keyboard input
     # xset r rate 220 30
@@ -92,6 +98,7 @@ if status is-interactive # Commands to run in interactive sessions can go here
         set --local result (command tere $argv)
         [ -n "$result" ] && cd -- "$result"
     end
+
 
     # prompt
     set -g hydro_symbol_prompt λ
@@ -122,5 +129,11 @@ if status is-interactive # Commands to run in interactive sessions can go here
     end
     # <<< conda initialize <<<
 
+    # 'z' is a better cd that remembers directories
+    zoxide init fish | source
+
+    # use common trash locaction for rip
+    set -gx GRAVEYARD ~/.local/share/Trash
+    # alias rip 'rip --graveyard ~/.local/share/Trash'
 
 end

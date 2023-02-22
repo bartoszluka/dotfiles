@@ -15,7 +15,6 @@ end
 require("packer").startup(function(use)
     use("wbthomason/packer.nvim") -- Package manager
     -- I preffer lazygit, maybe in the future I will make a switch
-    -- use("tpope/vim-fugitive") -- Git commands in nvim
     -- use("tpope/vim-rhubarb") -- Fugitive-companion to interact with github
     use({ "lewis6991/gitsigns.nvim", requires = { "nvim-lua/plenary.nvim" } }) -- Add git related info in the signs columns and popups
     use("numToStr/Comment.nvim") -- "gc" to comment visual regions/lines
@@ -70,8 +69,8 @@ require("packer").startup(function(use)
                     mappings = {
                         list = {
                             -- add multiple normal mode mappings for edit
-                            { key = { "<CR>", "o", "l" }, action = "edit", mode = "n" },
-                            { key = { "h" }, action = "close_node", mode = "n" },
+                            { key = { "<CR>", "o", "l" }, action = "edit",       mode = "n" },
+                            { key = { "h" },              action = "close_node", mode = "n" },
                         },
                     },
                 },
@@ -304,12 +303,42 @@ require("packer").startup(function(use)
             })
         end,
     })
+    use("lewis6991/hover.nvim")
+    use({
+        "ggandor/leap.nvim", -- better in-buffer navigation
+        config = function()
+            require("leap").add_default_mappings()
+        end,
+        requires = {
+            "tpope/vim-repeat", -- repeat last command on plugins
+        },
+    })
+    use({
+        "ggandor/flit.nvim",
+        requires = {
+            "ggandor/leap.nvim", -- better in-buffer navigation
+        },
+        config = function()
+            require("flit").setup()
+        end,
+    }) -- better f/t motions
+    use("tpope/vim-fugitive") -- Git commands in nvim
+
+    use("folke/todo-comments.nvim")
+    use({
+        "echasnovski/mini.ai",
+        config = function()
+            require("mini.ai").setup()
+        end,
+    })
     -- end plugins
+
     if is_bootstrap then
         require("packer").sync()
     end
 end)
 require("bartek.alpha")
+require("bartek.hover")
 require("bartek.project")
 require("bartek.zen-mode")
 
@@ -507,7 +536,6 @@ vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { de
 require("nvim-treesitter.configs").setup({
     -- Add languages to be installed here that you want installed for treesitter
     ensure_installed = { "lua", "python", "rust", "typescript", "haskell" },
-
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {
@@ -565,9 +593,9 @@ require("nvim-treesitter.configs").setup({
 })
 
 -- Diagnostic keymaps
-vim.keymap.set("n", "<leader>lk", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
-vim.keymap.set("n", "<leader>lj", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
--- vim.keymap.set("n", "<leader>e", vim.diagnostic.open_float)
+vim.keymap.set("n", "<C-p>", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
+vim.keymap.set("n", "<C-n>", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+vim.keymap.set("n", "<leader>h", vim.diagnostic.open_float, { desc = "Open diagnostic" })
 -- vim.keymap.set("n", "<leader>w", "<cmd>:w<CR>", { desc = "Write file" })
 vim.keymap.set("n", "<leader>q", "<cmd>:q<CR>", { desc = "Quit" })
 vim.keymap.set("n", "<leader>x", "<cmd>:Bdelete<CR>", { desc = "Close buffer" })
@@ -607,7 +635,7 @@ local on_attach = function(_, bufnr)
     end, { desc = "Format current buffer with LSP" })
     nmap("<leader>f", "<cmd>:Format<CR>", "Format file")
     -- See `:help K` for why this keymap
-    nmap("K", vim.lsp.buf.hover, "Hover Documentation")
+    -- nmap("K", vim.lsp.buf.hover, "Hover Documentation")
     nmap("gh", vim.lsp.buf.signature_help, "Signature Documentation")
 
     -- Lesser used LSP functionality
@@ -628,7 +656,7 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protoc
 require("mason").setup()
 
 -- Enable the following language servers
-local servers = { "clangd", "rust_analyzer", "pyright", "tsserver", "sumneko_lua", "hls" }
+local servers = { "clangd", "rust_analyzer", "pyright", "tsserver", "lua_ls", "hls" }
 
 -- Ensure the servers above are installed
 require("mason-lspconfig").setup({
@@ -649,7 +677,7 @@ local runtime_path = vim.split(package.path, ";")
 table.insert(runtime_path, "lua/?.lua")
 table.insert(runtime_path, "lua/?/init.lua")
 
-require("lspconfig").sumneko_lua.setup({
+require("lspconfig").lua_ls.setup({
     on_attach = on_attach,
     capabilities = capabilities,
     settings = {
@@ -680,7 +708,7 @@ cmp.setup({
         end,
     },
     mapping = cmp.mapping.preset.insert({
-        ["<C-d>"] = cmp.mapping.scroll_docs(-4),
+        ["<C-d>"] = cmp.mapping.scroll_docs( -4),
         ["<C-f>"] = cmp.mapping.scroll_docs(4),
         ["<C-Space>"] = cmp.mapping.complete(),
         ["<CR>"] = cmp.mapping.confirm({
@@ -699,8 +727,8 @@ cmp.setup({
         ["<S-Tab>"] = cmp.mapping(function(fallback)
             if cmp.visible() then
                 cmp.select_prev_item()
-            elseif luasnip.jumpable(-1) then
-                luasnip.jump(-1)
+            elseif luasnip.jumpable( -1) then
+                luasnip.jump( -1)
             else
                 fallback()
             end
@@ -716,13 +744,31 @@ vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.go.showmode = false
 vim.cmd("set foldlevel=999")
+vim.diagnostic.config({ severity_sort = true })
 
 -- local fold_group = vim.api.nvim_creatfish_indente_augroup("FoldGroup", { clear = true })
 -- vim.api.nvim_create_autocmd(
 --  { "BufReadPost", "FileReadPost" },
 --  { pattern = "*", command = "normal zR", group = fold_group }
 -- )
---
+
+local git_group = vim.api.nvim_create_augroup("GitOrNotGit", { clear = true })
+vim.api.nvim_create_autocmd({ "BufReadPost", "FileReadPost" }, {
+    pattern = "*",
+    callback = function()
+        vim.fn.system("git rev-parse --is-inside-work-tree 2&>/dev/null")
+        local is_git_repo = vim.v.shell_error == 0
+        local finder = {}
+        if is_git_repo then
+            finder = require("telescope.builtin").git_files
+        else
+            finder = require("telescope.builtin").find_files
+        end
+        vim.keymap.set("n", "<leader>sf", finder, { desc = "[S]earch [F]iles" })
+    end,
+    group = git_group,
+})
+
 -- Utilities for creating configurations
 
 local null_ls = require("null-ls")
