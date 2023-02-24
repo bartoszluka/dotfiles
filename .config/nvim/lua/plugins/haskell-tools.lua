@@ -5,6 +5,7 @@ return {
         "nvim-lua/plenary.nvim",
         "nvim-telescope/telescope.nvim", -- optional
     },
+    ft = "haskell",
     config = function()
         local ht = require("haskell-tools")
         local def_opts = { noremap = true, silent = true }

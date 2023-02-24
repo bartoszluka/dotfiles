@@ -136,7 +136,7 @@ return {
             val = {
                 { type = "text", val = "configs", opts = { hl = hl1, position = "center" } },
                 { type = "padding", val = 1 },
-                button("c", "  Neovim config", "<cmd>edit $MYVIMRC <CR>"),
+                button("c", "  Neovim config", "<cmd>edit $MYVIMRC <CR><cmd>GuessIndent<CR>"),
                 button("x", "  xmonad config", "<cmd>edit $HOME/.config/xmonad/src/xmonad.hs<CR>"),
                 button("s", "  fish", "<cmd>edit ~/.config/fish/config.fish<CR>"),
                 button("i", "  Kitty", "<cmd>edit ~/.config/kitty/kitty.conf<CR>"),

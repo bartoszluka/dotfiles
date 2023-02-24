@@ -4,7 +4,7 @@ return {
         dependencies = { "nvim-lua/plenary.nvim" },
         -- Gitsigns
         -- See `:help gitsigns.txt`
-        config = {
+        opts = {
             signs = {
                 add = { text = "+" },
                 change = { text = "~" },
@@ -26,18 +26,23 @@ return {
     "williamboman/mason-lspconfig.nvim", -- Automatically install language servers to stdpath
     {
         "hrsh7th/nvim-cmp",
+        version = false,
         dependencies = { "hrsh7th/cmp-nvim-lsp" },
     },
     {
         "lukas-reineke/indent-blankline.nvim",
         -- See `:help indent_blankline.txt`
-        config = {
-            -- char = "▏",
-            char = "|",
-            show_trailing_blankline_indent = false,
+        config = function()
+            vim.opt.list = true
+            vim.opt.listchars:append("space:·")
+            vim.opt.listchars:append("tab:·→")
 
-            space_char_blankline = " ",
-        },
+            require("indent_blankline").setup({
+                show_first_indent_level = true,
+                show_trailing_blankline_indent = false,
+                space_char_blankline = " ",
+            })
+        end,
     }, -- Add indentation guides even on blank lines
     {
         "nmac427/guess-indent.nvim", -- Detect tabstop and shiftwidth automatically (replaces vim-sleuth)
@@ -78,6 +83,9 @@ return {
     },
     {
         "kyazdani42/nvim-tree.lua",
+        keys = {
+            { "<leader>e", "<cmd>NvimTreeToggle<CR>", desc = "Toggle file explorer" },
+        },
         config = function()
             require("nvim-tree").setup({
                 sync_root_with_cwd = true,
@@ -93,7 +101,7 @@ return {
             })
         end,
     },
-    { "akinsho/bufferline.nvim", version = "v3.*", dependencies = "kyazdani42/nvim-web-devicons" },
+    { "akinsho/bufferline.nvim", version = "v3.*", dependencies = "nvim-tree/nvim-web-devicons" },
     { "moll/vim-bbye" },
     -- Terminal Toggle
     {
@@ -151,46 +159,44 @@ return {
     },
     {
         "loqusion/true-zen.nvim",
-        config = function()
-            require("true-zen").setup({
-                modes = { -- configurations per mode
-                    ataraxis = {
-                        shade = "dark", -- if `dark` then dim the padding windows, otherwise when it's `light` it'll brighten said windows
-                        backdrop = 0, -- percentage by which padding windows should be dimmed/brightened. Must be a number between 0 and 1. Set to 0 to keep the same background color
-                        minimum_writing_area = { -- minimum size of main window
-                            width = 100,
-                            height = 44,
-                        },
-                        quit_untoggles = false, -- type :q or :qa to quit Ataraxis mode
-                        padding = {
-                            right = 40,
-                            left = 40,
-                            top = 0,
-                            bottom = 0,
-                        },
-                        callbacks = {
-                            open_post = function()
-                                vim.wo.number = true
-                                vim.o.relativenumber = true
-                                local lualine = require("lualine")
-                                lualine.hide({
-                                    place = { "statusline", "tabline", "winbar" }, -- The segment this change applies to.
-                                    unhide = true,
-                                })
-                            end,
-                        },
+        opts = {
+            modes = { -- configurations per mode
+                ataraxis = {
+                    shade = "dark", -- if `dark` then dim the padding windows, otherwise when it's `light` it'll brighten said windows
+                    backdrop = 0, -- percentage by which padding windows should be dimmed/brightened. Must be a number between 0 and 1. Set to 0 to keep the same background color
+                    minimum_writing_area = { -- minimum size of main window
+                        width = 100,
+                        height = 44,
+                    },
+                    quit_untoggles = false, -- type :q or :qa to quit Ataraxis mode
+                    padding = {
+                        right = 40,
+                        left = 40,
+                        top = 0,
+                        bottom = 0,
+                    },
+                    callbacks = {
+                        open_post = function()
+                            vim.wo.number = true
+                            vim.o.relativenumber = true
+                            local lualine = require("lualine")
+                            lualine.hide({
+                                place = { "statusline", "tabline", "winbar" }, -- The segment this change applies to.
+                                unhide = true,
+                            })
+                        end,
                     },
                 },
-                integrations = {
-                    tmux = false, -- hide tmux status bar in (minimalist, ataraxis)
-                    kitty = { -- increment font size in Kitty. Note: you must set `allow_remote_control socket-only` and `listen_on unix:/tmp/kitty` in your personal config (ataraxis)
-                        enabled = false,
-                        font = "+3",
-                    },
-                    twilight = false, -- enable twilight (ataraxis)
+            },
+            integrations = {
+                tmux = false, -- hide tmux status bar in (minimalist, ataraxis)
+                kitty = { -- increment font size in Kitty. Note: you must set `allow_remote_control socket-only` and `listen_on unix:/tmp/kitty` in your personal config (ataraxis)
+                    enabled = false,
+                    font = "+3",
                 },
-            })
-        end,
+                twilight = false, -- enable twilight (ataraxis)
+            },
+        },
     },
 
     {
@@ -254,8 +260,22 @@ return {
             require("nvim-autopairs").setup({})
         end,
     },
-    "nvim-treesitter/playground",
-    "RRethy/vim-illuminate",
+    { "nvim-treesitter/playground", cmd = "TSPlaygroundToggle" },
+    {
+        "RRethy/vim-illuminate",
+        config = function()
+            require("illuminate").configure({
+                -- modes_denylist = { "v", "o", "nov" },
+                modes_allowlist = { "n" },
+                filetypes_denylist = {
+                    "dirvish",
+                    "fugitive",
+                    "alpha",
+                },
+            })
+            vim.keymap.set("n", ",I", require("illuminate").toggle, { desc = "Toggle 'illuminate'" })
+        end,
+    },
     "lervag/vimtex",
     {
         "folke/which-key.nvim",
@@ -271,6 +291,10 @@ return {
         "ggandor/leap.nvim", -- better in-buffer navigation
         config = function()
             require("leap").add_default_mappings()
+            vim.keymap.del({ "x", "o" }, "s")
+            vim.keymap.set({ "x", "o" }, "z", "<Plug>(leap-forward-to)", { desc = "leap forward to", silent = true })
+            vim.keymap.del({ "x", "o" }, "S")
+            vim.keymap.set({ "x", "o" }, "Z", "<Plug>(leap-backward-to)", { desc = "leap forward to", silent = true })
         end,
         dependencies = {
             "tpope/vim-repeat", -- repeat last command on plugins
@@ -320,9 +344,24 @@ return {
     {
         -- No need to copy this inside `setup()`. Will be used automatically.
         "echasnovski/mini.indentscope",
-        config = function()
-            local indentscope = require("mini.indentscope")
-            indentscope.setup({
+        event = { "BufReadPre", "BufNewFile" },
+        config = function(_, opts)
+            vim.api.nvim_create_autocmd("FileType", {
+                pattern = {
+                    "help",
+                    "alpha",
+                    "dashboard",
+                    "neo-tree",
+                    "terminal",
+                    "Trouble",
+                    "lazy",
+                    "mason",
+                },
+                callback = function()
+                    vim.b.miniindentscope_disable = true
+                end,
+            })
+            require("mini.indentscope").setup({
                 draw = {
                     -- Delay (in ms) between event and start of drawing scope indicator
                     delay = 0,
@@ -331,7 +370,7 @@ return {
                     -- next and total step numbers, returns wait time (in ms). See
                     -- |MiniIndentscope.gen_animation| for builtin options. To disable
                     -- animation, use `require('mini.indentscope').gen_animation.none()`.
-                    animation = indentscope.gen_animation.none(), --<function: implements constant 20ms between steps>,
+                    animation = require("mini.indentscope").gen_animation.none(), --<function: implements constant 20ms between steps>,
                 },
                 -- Module mappings. Use `''` (empty string) to disable one.
                 mappings = {
@@ -420,12 +459,10 @@ return {
                 desc = "view notification history",
             },
         },
-        config = {
+
+        opts = {
             render = "simple",
             stages = "fade",
-        },
-        opts = {
-            timeout = 3000,
             max_height = function()
                 return math.floor(vim.o.lines * 0.75)
             end,
@@ -448,7 +485,7 @@ return {
                     basic = true,
 
                     -- Extra UI features ('winblend', 'cmdheight=0', ...)
-                    extra_ui = true,
+                    extra_ui = false,
 
                     -- Presets for window borders ('single', 'double', ...)
                     win_borders = "default",
@@ -480,5 +517,19 @@ return {
             vim.keymap.del({ "n", "v", "i" }, "<C-s>")
             vim.keymap.del({ "n", "i" }, "<C-z>")
         end,
+    },
+    {
+        "folke/trouble.nvim",
+        dependencies = { "nvim-tree/nvim-web-devicons" },
+        config = true,
+        keys = {
+            -- Lua
+            { "<leader>tt", "<cmd>TroubleToggle<cr>", { silent = true, noremap = true } },
+            { "<leader>tw", "<cmd>TroubleToggle workspace_diagnostics<cr>", { silent = true, noremap = true } },
+            { "<leader>td", "<cmd>TroubleToggle document_diagnostics<cr>", { silent = true, noremap = true } },
+            { "<leader>tl", "<cmd>TroubleToggle loclist<cr>", { silent = true, noremap = true } },
+            { "<leader>tq", "<cmd>TroubleToggle quickfix<cr>", { silent = true, noremap = true } },
+            { "gR", "<cmd>TroubleToggle lsp_references<cr>", { silent = true, noremap = true } },
+        },
     },
 }

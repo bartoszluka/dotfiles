@@ -18,11 +18,13 @@ vim.opt.rtp:prepend(lazypath)
 
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
+vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 vim.o.termguicolors = true
 
 vim.keymap.set({ "n", "v" }, ";", ":", { silent = false })
 
 require("lazy").setup("plugins")
+vim.notify = require("notify")
 
 local nlspsettings = require("nlspsettings")
 
@@ -83,14 +85,11 @@ vim.wo.cursorline = true
 vim.o.completeopt = "menuone,noselect"
 
 -- [[ Basic Keymaps ]]
--- Set <space> as the leader key
--- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.keymap.set({ "n", "v", "o" }, "L", "$", { silent = true })
 vim.keymap.set({ "n", "v", "o" }, "H", "0", { silent = true })
 -- Keymaps for better default experience
 -- See `:help vim.keymap.set()`
-vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 
 -- Remap for dealing with word wrap
 vim.keymap.set("n", "k", "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
@@ -156,7 +155,7 @@ vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { de
 -- See `:help nvim-treesitter`
 require("nvim-treesitter.configs").setup({
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { "lua", "python", "rust", "typescript", "haskell" },
+    ensure_installed = { "lua", "python", "rust", "typescript", "haskell", "markdown", "markdown_inline" },
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {
@@ -347,7 +346,17 @@ cmp.setup({
             end
         end, { "i", "s" }),
     }),
-    sources = { { name = "nvim_lsp" }, { name = "luasnip" } },
+    sources = {
+        { name = "nvim_lsp" },
+        { name = "luasnip" },
+        { name = "buffer" },
+        { name = "path" },
+    },
+    experimental = {
+        ghost_text = {
+            hl_group = "LspCodeLens",
+        },
+    },
 })
 
 -- MINE
@@ -511,7 +520,6 @@ vim.keymap.set({ "n", "v" }, "<C-l>", "<C-w>l", { desc = "Focus window to the ri
 vim.keymap.set({ "n", "v" }, "<C-h>", "<C-w>h", { desc = "Focus window to the left" })
 
 -- vim.keymap.set("n", "<leader>f", "<cmd>Format<CR>", { desc = "Format buffer" })
-vim.keymap.set("n", "<leader>e", "<cmd>NvimTreeToggle<CR>", { desc = "Toggle file explorer" })
 -- vim.keymap.set("n", "<leader>x", "<cmd>BufferKill<CR>", { desc = "Close Buffer" })
 -- vim.keymap.set("n", "<leader>c", "<cmd>TZAtaraxis<CR>", { desc = "Center buffer" })
 -- vim.keymap.set("n", "<leader>u", "g~l", { desc = "Swap case" })
