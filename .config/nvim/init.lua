@@ -16,12 +16,41 @@ if not vim.loop.fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+-- [[ Basic Keymaps ]]
+--  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 vim.o.termguicolors = true
 
 vim.keymap.set({ "n", "v" }, ";", ":", { silent = false })
+vim.keymap.set({ "c" }, "<C-l>", "<Right>", { silent = false })
+
+vim.api.nvim_create_autocmd("BufReadPost", {
+    callback = function()
+        local mark = vim.api.nvim_buf_get_mark(0, '"')
+        local line_count = vim.api.nvim_buf_line_count(0)
+        if mark[1] > 0 and mark[1] <= line_count then
+            pcall(vim.api.nvim_win_set_cursor, 0, mark)
+        end
+    end,
+})
+
+vim.api.nvim_create_user_command("Reverse", function(args)
+    if args.line1 == args.line2 then
+        return
+    end
+    local buffer = vim.api.nvim_get_current_buf()
+    local start_line, end_line = args.line1, args.line2
+    local lines = vim.api.nvim_buf_get_lines(buffer, start_line - 1, end_line, false)
+    local reversed_lines = {}
+
+    for i = #lines, 1, -1 do
+        table.insert(reversed_lines, lines[i])
+    end
+
+    vim.api.nvim_buf_set_lines(buffer, start_line - 1, end_line, false, reversed_lines)
+end, { range = true, desc = "reverse selected lines" })
 
 require("lazy").setup("plugins")
 vim.notify = require("notify")
@@ -36,7 +65,6 @@ nlspsettings.setup({
     loader = "json",
 })
 
-require("telescope").load_extension("projects")
 -- To get ui-select loaded and working with telescope, you need to call
 -- load_extension, somewhere after setup function:
 -- require("telescope").load_extension("ui-select")
@@ -84,8 +112,6 @@ vim.wo.cursorline = true
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = "menuone,noselect"
 
--- [[ Basic Keymaps ]]
---  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.keymap.set({ "n", "v", "o" }, "L", "$", { silent = true })
 vim.keymap.set({ "n", "v", "o" }, "H", "0", { silent = true })
 -- Keymaps for better default experience
@@ -109,7 +135,15 @@ vim.api.nvim_create_autocmd("TextYankPost", {
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
 local telescope = require("telescope")
+telescope.load_extension("projects")
 local actions = require("telescope.actions")
+local trouble = require("trouble.providers.telescope")
+
+telescope.setup({
+    defaults = {
+        mappings = {},
+    },
+})
 telescope.setup({
     defaults = {
         mappings = {
@@ -126,7 +160,9 @@ telescope.setup({
                     type = "action",
                     opts = { nowait = true, silent = true },
                 },
+                ["<c-t>"] = trouble.open_with_trouble,
             },
+            n = { ["<c-t>"] = trouble.open_with_trouble },
         },
     },
 })
@@ -150,12 +186,34 @@ vim.keymap.set("n", "<leader>sh", require("telescope.builtin").help_tags, { desc
 vim.keymap.set("n", "<leader>sw", require("telescope.builtin").grep_string, { desc = "[S]earch current [W]ord" })
 vim.keymap.set("n", "<leader>sg", require("telescope.builtin").live_grep, { desc = "[S]earch by [G]rep" })
 vim.keymap.set("n", "<leader>sd", require("telescope.builtin").diagnostics, { desc = "[S]earch [D]iagnostics" })
+vim.keymap.set("n", "<leader>sr", require("telescope.builtin").oldfiles, { desc = "[S]earch [R]ecent" })
+
+-- find plugin files
+vim.keymap.set("n", "<leader>sp", function()
+    require("telescope.builtin").find_files({ cwd = "~/.config/nvim/lua/plugins" })
+end, { desc = "[S]earch [P]lugins" })
 
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
 require("nvim-treesitter.configs").setup({
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { "lua", "python", "rust", "typescript", "haskell", "markdown", "markdown_inline" },
+    ensure_installed = {
+        "bash",
+        "fish",
+        "haskell",
+        "help",
+        "json",
+        "lua",
+        "markdown",
+        "markdown_inline",
+        "python",
+        "query",
+        "regex",
+        "rust",
+        "typescript",
+        "vim",
+        "yaml",
+    },
     highlight = { enable = true },
     indent = { enable = true },
     incremental_selection = {
@@ -204,10 +262,9 @@ require("nvim-treesitter.configs").setup({
 -- Diagnostic keymaps
 vim.keymap.set("n", "<C-p>", vim.diagnostic.goto_prev, { desc = "Previous diagnostic" })
 vim.keymap.set("n", "<C-n>", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-vim.keymap.set("n", "<leader>h", vim.diagnostic.open_float, { desc = "Open diagnostic" })
+-- vim.keymap.set("n", "<leader>", vim.diagnostic.open_float, { desc = "Open diagnostic" })
 -- vim.keymap.set("n", "<leader>w", "<cmd>:w<CR>", { desc = "Write file" })
-vim.keymap.set("n", "<leader>q", "<cmd>:q<CR>", { desc = "Quit" })
-vim.keymap.set("n", "<leader>x", "<cmd>:Bdelete<CR>", { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>q", "<cmd>:quit<CR>", { desc = "Quit" })
 
 -- LSP settings.
 --  This function gets run when an LSP connects to a particular buffer.
@@ -245,7 +302,8 @@ local on_attach = function(_, bufnr)
     nmap("<leader>f", "<cmd>:Format<CR>", "Format file")
     -- See `:help K` for why this keymap
     -- nmap("K", vim.lsp.buf.hover, "Hover Documentation")
-    nmap("gh", vim.lsp.buf.signature_help, "Signature Documentation")
+    -- nmap("gh", vim.lsp.buf.signature_help, "Signature Documentation")
+    nmap("gh", vim.diagnostic.open_float, "Open diagnostic")
 
     -- Lesser used LSP functionality
     nmap("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
@@ -265,7 +323,7 @@ local capabilities = require("cmp_nvim_lsp").default_capabilities(vim.lsp.protoc
 require("mason").setup()
 
 -- Enable the following language servers
-local servers = { "rust_analyzer", "pyright", "tsserver", "lua_ls", "hls" }
+local servers = { "rust_analyzer", "pyright", "tsserver", "lua_ls" }
 
 -- Ensure the servers above are installed
 require("mason-lspconfig").setup({
@@ -278,6 +336,11 @@ for _, lsp in ipairs(servers) do
         capabilities = capabilities,
     })
 end
+
+-- require("lspconfig").hls.setup({
+--     on_attach = on_attach,
+--     capabilities = capabilities,
+-- })
 
 -- Example custom configuration for lua
 --
@@ -310,6 +373,7 @@ require("lspconfig").lua_ls.setup({
     },
 })
 -- nvim-cmp setup
+require("codeium")
 local cmp = require("cmp")
 local luasnip = require("luasnip")
 
@@ -348,9 +412,56 @@ cmp.setup({
     }),
     sources = {
         { name = "nvim_lsp" },
+        { name = "codeium" },
         { name = "luasnip" },
         { name = "buffer" },
         { name = "path" },
+    },
+    formatting = {
+        format = function(_, item)
+            local icons = {
+                Array = " ",
+                Boolean = " ",
+                Class = " ",
+                Color = " ",
+                Constant = " ",
+                Constructor = " ",
+                Copilot = " ",
+                Codeium = "󰘦 ",
+                Enum = " ",
+                EnumMember = " ",
+                Event = " ",
+                Field = " ",
+                File = " ",
+                Folder = " ",
+                Function = " ",
+                Interface = " ",
+                Key = " ",
+                Keyword = " ",
+                Method = " ",
+                Module = " ",
+                Namespace = " ",
+                Null = " ",
+                Number = " ",
+                Object = " ",
+                Operator = " ",
+                Package = " ",
+                Property = " ",
+                Reference = " ",
+                Snippet = " ",
+                String = " ",
+                Struct = " ",
+                Text = " ",
+                TypeParameter = " ",
+                Unit = " ",
+                Value = " ",
+                Variable = " ",
+            }
+            if icons[item.kind] then
+                item.kind = icons[item.kind] .. item.kind
+            end
+            return item
+        end,
     },
     experimental = {
         ghost_text = {
@@ -375,16 +486,15 @@ vim.diagnostic.config({ severity_sort = true })
 -- )
 
 local git_group = vim.api.nvim_create_augroup("GitOrNotGit", { clear = true })
-vim.api.nvim_create_autocmd({ "BufReadPost", "FileReadPost" }, {
+vim.api.nvim_create_autocmd({ "DirChanged" }, {
     pattern = "*",
     callback = function()
-        vim.fn.system("git rev-parse --is-inside-work-tree 2&>/dev/null")
-        local is_git_repo = vim.v.shell_error == 0
-        local finder = {}
-        if is_git_repo then
-            finder = require("telescope.builtin").git_files
-        else
-            finder = require("telescope.builtin").find_files
+        vim.fn.system({ "git", "status" })
+        local finder = function()
+            local ok, _ = pcall(require("telescope.builtin").git_files, { show_untracked = true })
+            if not ok then
+                require("telescope.builtin").find_files()
+            end
         end
         vim.keymap.set("n", "<leader>sf", finder, { desc = "[S]earch [F]iles" })
     end,
@@ -440,7 +550,12 @@ null_ls.register({
     null_ls.builtins.formatting.fish_indent,
     null_ls.builtins.formatting.stylua,
     null_ls.builtins.formatting.latexindent,
-    null_ls.builtins.formatting.prettierd,
+    -- null_ls.builtins.formatting.prettierd,
+    null_ls.builtins.formatting.prettier,
+    null_ls.builtins.diagnostics.chktex,
+    null_ls.builtins.diagnostics.ltrs,
+    null_ls.builtins.diagnostics.proselint,
+    -- null_ls.builtins.code_actions.gitsigns,
 })
 
 null_ls.setup({
@@ -512,8 +627,6 @@ local function cmds(commands)
     return out
 end
 
-vim.keymap.set("n", "<leader>c", cmds({ "TZAtaraxis" }), { desc = "Center buffer" })
-
 vim.keymap.set({ "n", "v" }, "<C-j>", "<C-w>j", { desc = "Focus window to the bottom" })
 vim.keymap.set({ "n", "v" }, "<C-k>", "<C-w>k", { desc = "Focus window to the top" })
 vim.keymap.set({ "n", "v" }, "<C-l>", "<C-w>l", { desc = "Focus window to the right" })
@@ -545,4 +658,3 @@ vim.opt.wrap = false -- Disable line wrap
 --
 -- vim.opt.wildmode = { "list", "longest" } -- Command-line completion mode
 -- The line beneath this is called `modeline`. See `:help modeline`
--- vim: ts=2 sts=2 sw=2 et

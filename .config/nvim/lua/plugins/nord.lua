@@ -12,5 +12,6 @@ return {
         vim.g.nord_uniform_diff_background = false -- enables/disables colorful backgrounds when used in diff mode
         vim.g.nord_bold = false -- enables/disables bold
         require("nord").set()
+        vim.cmd("highlight link LspCodeLens Comment")
     end,
 }

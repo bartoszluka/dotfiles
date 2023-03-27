@@ -1,3 +1,5 @@
 {
-  "haskell.formattingProvider": "fourmolu"
+  "haskell.formattingProvider": "fourmolu",
+  "haskell.filetypes": ["haskell", "lhaskell", "cabal"],
+  "haskell.plugin.rename.config.crossModule": true
 }
