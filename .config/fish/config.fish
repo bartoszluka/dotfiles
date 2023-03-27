@@ -56,6 +56,7 @@ if status is-interactive # Commands to run in interactive sessions can go here
     fish_add_path --path ~/.ghcup/bin/
     fish_add_path --path ~/.ghcup/bin/
     fish_add_path --path /home/linuxbrew/.linuxbrew/bin
+    fish_add_path --path ~/.cargo/bin/
 
     # bat as a manpager
     set -gx MANPAGER "sh -c 'col -bx | bat -l man -p'"
@@ -135,5 +136,8 @@ if status is-interactive # Commands to run in interactive sessions can go here
     # use common trash locaction for rip
     set -gx GRAVEYARD ~/.local/share/Trash
     # alias rip 'rip --graveyard ~/.local/share/Trash'
+
+    # copy command output to clipboard
+    alias clip 'xsel -ib'
 
 end
