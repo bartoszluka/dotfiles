@@ -117,13 +117,17 @@ return {
         local quick_link_btns = {
             type = "group",
             val = {
-                { type = "text", val = "quick links", opts = { hl = hl1, position = "center" } },
+                { type = "text",    val = "quick links", opts = { hl = hl1, position = "center" } },
                 { type = "padding", val = 1 },
 
-                button("p", "  Find project", "<cmd>Telescope projects <CR>"),
-                button("f", "  Find file", "<cmd>Telescope find_files <CR>"),
-                button("r", "  Recently used files", "<cmd>Telescope oldfiles <CR>"),
-                button("t", "  Find text", "<cmd>Telescope live_grep <CR>"),
+                button("p", "  Find project", "<cmd>Telescope projects<CR>"),
+                button(
+                    "f",
+                    "  Find file",
+                    "<cmd>lua require('telescope').extensions.smart_open.smart_open({ cwd_only = true })<CR>"
+                ),
+                button("r", "  Recently used files", "<cmd>Telescope oldfiles<CR>"),
+                button("t", "  Find text", "<cmd>Telescope live_grep<CR>"),
             },
             opts = {
                 hl = hl2,
@@ -134,7 +138,7 @@ return {
         local config_btns = {
             type = "group",
             val = {
-                { type = "text", val = "configs", opts = { hl = hl1, position = "center" } },
+                { type = "text",    val = "configs", opts = { hl = hl1, position = "center" } },
                 { type = "padding", val = 1 },
                 button("c", "  Neovim config", "<cmd>edit $MYVIMRC <CR>"),
                 button("x", "  xmonad config", "<cmd>edit $HOME/.config/xmonad/src/xmonad.hs<CR>"),

@@ -1,9 +1,11 @@
 return {
     -- See `:help lualine.txt`
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    dependencies = {
+        "nvim-tree/nvim-web-devicons",
+        { "jcdickinson/wpm.nvim", enabled = false, config = true },
+    },
     opts = function()
-
         -- set up a timer that triggers every minute
         local timer = vim.loop.new_timer()
         if timer then
@@ -21,8 +23,15 @@ return {
                 end)
             )
         end
-        -- define an autocommand that stops the timer when Neovim exits
-        vim.cmd("autocmd VimLeave * lua timer:stop()")
+        nx.au({
+            "VimLeave",
+            pattern = "*",
+            callback = function()
+                if timer then
+                    timer:stop()
+                end
+            end,
+        }, { create_group = "StopWakaTimeChecking" })
 
         local function fg(name)
             return function()
@@ -34,11 +43,18 @@ return {
 
         return {
             options = {
-                theme = "auto",
+                theme = "nord",
                 component_separators = "|",
                 section_separators = "",
                 globalstatus = true,
-                disabled_filetypes = { statusline = { "dashboard", "lazy", "alpha" } },
+                disabled_filetypes = {
+                    statusline = {
+                        "dashboard",
+                        "lazy",
+                        "alpha",
+                        "TelescopePrompt",
+                    },
+                },
             },
             sections = {
                 lualine_a = { "mode" },
@@ -63,7 +79,17 @@ return {
                             right = 0,
                         },
                     },
-                    { "filename", path = 1, symbols = { readonly = "", unnamed = "" } },
+                    {
+                        "filename",
+                        path = 1,
+                        newfile_status = true,
+                        symbols = {
+                            modified = "●",
+                            readonly = "",
+                            unnamed = "",
+                        },
+                        color = { gui = "bold" },
+                    },
                     {
                         -- wakatime
                         function()
@@ -71,6 +97,11 @@ return {
                         end,
                         icon = " ",
                     },
+                    -- wpm.wpm,
+                    -- {
+                    --     wpm.historic_graph,
+                    --     color = fg("Statement"),
+                    -- },
                     -- stylua: ignore
                     -- {
                     --     function() return require("nvim-navic").get_location() end,
@@ -103,7 +134,9 @@ return {
                         function()
                             local clients = vim.lsp.get_active_clients({ bufnr = 0 })
                             for _, client in ipairs(clients) do
-                                return client.name
+                                if client.name ~= "null-ls" then
+                                    return client.name
+                                end
                             end
                             return "none"
                         end,

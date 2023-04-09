@@ -7,14 +7,16 @@ return {
             vim.api.nvim_win_set_cursor(0, { row, col })
             vim.api.nvim_feedkeys("a", "ni", true)
         end
-        local function ins_on_line(lnum)
+        local function ins_on_line(lnum, todo)
             local row, _ = unpack(vim.api.nvim_win_get_cursor(0))
 
             local srow = row + lnum
             require("ts_context_commentstring.internal").update_commentstring()
-            local lcs = vim.split(vim.bo.commentstring, "%s", {})[1]
+            local lcs = vim.split(vim.bo.commentstring, "%s", {plain=true,trimempty=true})[1]
 
-            vim.api.nvim_buf_set_lines(0, srow, srow, false, { lcs .. " " })
+            local todo_string = todo and "TODO: " or ""
+
+            vim.api.nvim_buf_set_lines(0, srow, srow, false, { lcs .. " " .. todo_string })
             vim.api.nvim_win_set_cursor(0, { srow + 1, 0 })
             vim.api.nvim_command("normal! ==")
             move_n_insert(srow + 1, #vim.api.nvim_get_current_line() - 1)
@@ -55,6 +57,10 @@ return {
         vim.keymap.set("n", "gcO", function()
             ins_on_line(-1)
         end, { desc = "insert comment above" })
+
+        vim.keymap.set("n", "gct", function()
+            ins_on_line(-1, true)
+        end, { desc = "insert comment above starting with TODO:" })
 
         vim.keymap.set("n", "gcA", insert_at_the_end, { desc = "insert comment above" })
 
