@@ -1,0 +1,9 @@
+resolver: lts-19.6
+
+packages:
+  - .
+
+extra-deps:
+  - X11-1.10.3@sha256:e0b9a48aab0a963a4b5015287fe3aaf93181697931770a2c8477befe88a9e775,3759
+  - /home/bartek/repos/xmonad-git
+  - /home/bartek/repos/xmonad-contrib-git

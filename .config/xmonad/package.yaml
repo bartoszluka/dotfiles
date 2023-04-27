@@ -1,0 +1,32 @@
+name:                xmonad-config
+version:             0.17
+synopsis:            My xmonad configuration.
+license:             Freeware
+author:              Bartosz Łuka
+maintainer:          bartoszluka1@gmail.com
+homepage:            https://gitlab.com/slotThe/dotfiles/
+
+ghc-options:
+  -Wall
+  -Wcompat
+  -Wincomplete-record-updates
+  -Wincomplete-uni-patterns
+  -Wredundant-constraints
+  -O2
+
+dependencies:
+  - base
+  - containers
+  - unix
+  - xmonad
+  - xmonad-contrib
+  - X11
+  - X11-xft        >= 0.3.4
+  - utf8-string
+  - directory
+  - bytestring
+
+executables:
+  xmonad-config:
+    source-dirs: src
+    main: xmonad.hs
