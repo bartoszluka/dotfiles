@@ -35,11 +35,6 @@ get_duration() {
 
 }
 
-KEY="c68a27ef730375ce23429eafe5afb606"
-CITY="Warsaw"
-UNITS="metric"
-SYMBOL="°"
-
 API="https://api.openweathermap.org/data/2.5"
 
 if [ -n "$CITY" ]; then
