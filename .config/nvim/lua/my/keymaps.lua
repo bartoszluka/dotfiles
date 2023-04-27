@@ -1,4 +1,3 @@
-
 -- Diagnostic keymaps
 vim.diagnostic.config({ severity_sort = true })
 nx.map({
@@ -28,10 +27,9 @@ nx.map({
     { "j", "v:count == 0 ? 'gj' : 'j'", expr = true, silent = true },
 })
 
-
 nx.map({
-    { "<leader>q", "<cmd>confirm quit<CR>",  desc = "Quit" },
-    { "<leader>u", "g~l",            desc = "Swap case" },
+    { "<leader>q", "<cmd>confirm quit<CR>", desc = "Quit" },
+    { "<leader>u", "g~l", desc = "Swap case" },
     { "<leader>w", "<cmd>write<CR>", desc = "Write file" },
     { "<leader>W", "<cmd>write<CR>", desc = "Write file" },
 })
@@ -44,7 +42,6 @@ nx.map({
     { "<C-h>", "<C-w>h", modes, desc = "Focus window to the left" },
 })
 nx.map({
-    { ";",     ":",       { "n", "v" }, silent = false }, -- map ';' to start command mode
-    { "<C-l>", "<Right>", { "c" },      silent = false },
+    { ";", ":", { "n", "v" }, silent = false }, -- map ';' to start command mode
+    { "<C-l>", "<Right>", { "c" }, silent = false },
 })
-

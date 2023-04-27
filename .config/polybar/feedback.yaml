@@ -1,0 +1,6 @@
+loops:
+  polybar:
+    description: work on polybar
+    script: ./launch.sh
+    git: false
+    find: "-name '*.ini' -or -name '*.sh'"
