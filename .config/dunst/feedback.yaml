@@ -1,0 +1,11 @@
+loops:
+  dunst:
+    description: work on dunst
+    command: |
+      killall --wait dunst
+      dunst &
+      notify-send -a "test app" -u critical critical
+      notify-send -a "test app" -u normal normal
+      notify-send -a "test app" -u low low
+    git: false
+    find: "-name 'dunstrc'"
