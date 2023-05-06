@@ -3,4 +3,4 @@ loops:
     description: work on polybar
     script: ./launch.sh
     git: false
-    find: "-name '*.ini' -or -name '*.sh'"
+    find: "-name '*.ini' -or -executable"
