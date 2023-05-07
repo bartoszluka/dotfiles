@@ -17,6 +17,8 @@ ghc-options:
 dependencies:
   - base
   - containers
+  - dbus
+  - text
   - unix
   - xmonad
   - xmonad-contrib

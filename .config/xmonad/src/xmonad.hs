@@ -1,25 +1,31 @@
 {-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
--- import DBus qualified as D
--- import DBus.Client qualified as D
-
+import Codec.Binary.UTF8.String qualified as UTF8
 import Control.Monad (liftM2)
+import DBus qualified as D
+import DBus.Client qualified as D
 import Data.Map qualified as M
+import Data.Text qualified as T
+
 import Graphics.X11.ExtraTypes.XF86
 import XMonad
 import XMonad.Actions.Navigation2D
 import XMonad.Actions.SpawnOn
+import XMonad.Actions.Submap (submap, visualSubmap)
 import XMonad.Config.Desktop
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.Focus (focusLockOff, focusLockOn, keepFocus, manageFocus, new, switchFocus)
 import XMonad.Hooks.InsertPosition
 import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.ManageHelpers (doCenterFloat, doFullFloat, doLower, isDialog)
+import XMonad.Hooks.ManageHelpers (composeOne, doCenterFloat, doFullFloat, isDialog, isFullscreen, transience, (-?>))
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.StatusBar
 import XMonad.Hooks.TaffybarPagerHints (pagerHints)
+import XMonad.Hooks.UrgencyHook (FocusHook (FocusHook), RemindWhen (..), SuppressWhen (..), UrgencyConfig (..), withUrgencyHookC)
 import XMonad.Layout.Accordion
 import XMonad.Layout.DecorationMadness
 import XMonad.Layout.LayoutModifier (ModifiedLayout)
@@ -28,21 +34,15 @@ import XMonad.Layout.MultiToggle.Instances
 import XMonad.Layout.NoBorders (smartBorders)
 import XMonad.Layout.Renamed (Rename (Replace), renamed)
 import XMonad.Layout.ResizableTile
-import XMonad.Layout.SimpleFloat
 import XMonad.Layout.SimplestFloat
 import XMonad.Layout.Spacing
 import XMonad.Layout.Tabbed
-import XMonad.Prelude (forM_, join, on, sortBy)
 import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch (fuzzyMatch, fuzzySort)
 import XMonad.StackSet qualified as W
 import XMonad.Util.Loggers
-import XMonad.Util.NamedWindows (getName)
-import XMonad.Util.Run (safeSpawn)
+import XMonad.Util.Run (safeRunInTerm)
 import XMonad.Util.SpawnOnce (spawnOnOnce, spawnOnce)
-import XMonad.Util.Themes
-
-colorScheme = "nord"
 
 colorBack = "#2E3440"
 colorFore = "#D8DEE9"
@@ -64,34 +64,38 @@ color14 = "#B48EAD"
 color15 = "#8FBCBB"
 color16 = "#ECEFF4"
 
-colorTrayer :: String
-colorTrayer = "--tint 0x2E3440"
 terminalCommand :: String -> String
 terminalCommand command = unwords [myTerminal, "--execute", command]
 
 myStartupHook = do
     -- spawn "setxkbmap -option caps:escape" -- remap caps to escape
     spawn "xsetroot -cursor_name left_ptr" -- cursor active at boot
+    -- spawnStatusBar "~/.config/polybar/launch.sh"
     spawn "nitrogen --restore" -- wallpaper
     spawnOnce "nm-applet"
+    spawnOnce "udiskie --tray" -- automount removable media
     spawnOnce "xfce4-power-manager" -- idk
     spawnOnce "clipmenud" -- clipboard management through dmenu/rofi
     spawnOnce "blueberry-tray" -- bluetooth tray icon
-    spawnOnce "picom --config ~/.config/xmonad/scripts/picom.conf" -- compositor
+    spawnOnce "picom --experimental-backends" -- compositor
     spawnOnce "dunst" -- notification
     spawnOnce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1" -- idk
     spawnOnce "xbanish -t 5 -s" -- hide cursor when typing and on inactivity
     spawnOnce "redshift-gtk" -- tint the screen red at night
     spawnOnce "~/.cargo/bin/kanata --cfg ~/.config/kanata/kanata-config.kbd" -- keyboard config
-    spawn "sleep 2 && xset r rate 300 30" -- speed up keybaord input, idk why it need sleep but it does
-    spawnOnOnce "10" "alacritty -e btm" -- "task manager"
+    spawnOnce "~/.config/xmonad/scripts/touch-screen disable"
+    spawn "sleep 2 && xset r rate 300 30" -- speed up keybaord input, idk why it needs sleep but it does
+    -- spawnOnOnce "10" "alacritty -e btm" -- "task manager"
+    spawnOnOnce "10" "termite -e btm" -- "task manager"
+    -- spawnOnOnce "10" "kitty -e btm" -- "task manager"
+    -- spawnOn "10" $ terminalCommand "btm" -- "task manager"
     spawnOnce "llk" -- keylogger "logkeys"
     setWMName "LG3D" -- apparently to make Java GUI programs work
 
 -- colors
 normBord = "#4C566A"
 
-focdBord = color15
+focdBord = color14
 
 -- focdBord = "#88C0D0"
 
@@ -104,7 +108,7 @@ myModifier :: KeyMask
 myModifier = mod4Mask
 
 myBorderWidth :: Dimension
-myBorderWidth = 4
+myBorderWidth = 3
 
 -- myWorkspaces    = ["\61612","\61899","\61947","\61635","\61502","\61501","\61705","\61564","\62150","\61872"]
 myWorkspaces :: [String]
@@ -115,33 +119,41 @@ myTerminal = "kitty"
 
 myBaseConfig = desktopConfig
 
+myFocusHook =
+    composeOne
+        [ new (className =? "kitty") -?> keepFocus
+        , return True -?> switchFocus
+        ]
+
 -- window manipulations
 myManageHook =
-    composeAll . concat $
-        [ [className =? "filenames" --> insertPosition Below Older]
-        , [title =? "Peek preview" --> insertPosition Below Older]
-        , [isDialog --> insertPosition Above Newer]
-        , --  TODO: for dialogs insert position above newer
-          [className =? c --> doCenterFloat | c <- floatAndCenterClasses]
-        , [className =? c --> doFullFloat | c <- floatAndFullScreenClasses]
-        , [className =? c --> doFloat | c <- floatClasses]
-        , [title =? t --> doFloat | t <- floatWithTitles]
-        , [resource =? r --> doFloat | r <- floatWithResources]
-        , [resource =? i --> doIgnore | i <- myIgnores]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61612" | x <- my1Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61899" | x <- my2Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61947" | x <- my3Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61635" | x <- my4Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61502" | x <- my5Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61501" | x <- my6Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61705" | x <- my7Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61564" | x <- my8Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\62150" | x <- my9Shifts]
-        -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61872" | x <- my10Shifts]
-        ]
+    composeOne
+        -- use only the first mathing rule
+        . concat
+        $ [ [isDialog -?> insertPosition Above Newer]
+          , [title =? "Peek preview" -?> insertPosition Below Older]
+          , [transience]
+          , [isFullscreen -?> doFullFloat]
+          , [className =? c -?> doCenterFloat | c <- floatAndCenterClasses]
+          , [className =? c -?> doFullFloat | c <- floatAndFullScreenClasses]
+          , [className =? c -?> doFloat | c <- floatClasses]
+          , [title =? t -?> doFloat | t <- floatWithTitles]
+          , [resource =? i -?> doIgnore | i <- myIgnores]
+          , [return True -?> insertPosition Below Newer]
+          -- , [(className =? x <||> title =? x <||> resource =? x) --> doShiftAndGo "\61612" | x <- my1Shifts]
+          ]
   where
     -- doShiftAndGo = doF . liftM2 (.) W.greedyView W.shift
-    floatAndCenterClasses = ["Arandr", "Arcolinux-calamares-tool.py", "Archlinux-tweak-tool.py", "Arcolinux-welcome-app.py", "Galculator", "Xfce4-terminal"]
+    floatAndCenterClasses =
+        [ "Arandr"
+        , "Arcolinux-calamares-tool.py"
+        , "Archlinux-tweak-tool.py"
+        , "Arcolinux-welcome-app.py"
+        , "Galculator"
+        , "Xfce4-terminal"
+        , "Blueberry.py"
+        , "Pavucontrol"
+        ]
     floatAndFullScreenClasses = ["Archlinux-logout.py", "steamwebhelper"]
     floatWithTitles = ["Downloads", "Save As..."]
     floatClasses =
@@ -156,14 +168,13 @@ myManageHook =
         , "splash"
         , "toolbar"
         ]
-    floatWithResources = []
-    myIgnores = ["desktop_window", "xfce4-notifyd"]
+    myIgnores = ["desktop_window", "xfce4-notifyd", "Dunst"]
 
 myLayout =
     -- configurableNavigation noNavigateBorders .
     smartBorders
-        . mkToggle1 NBFULL
         . avoidStruts
+        . mkToggle1 NBFULL
         $ (myTall ||| myMirrorTall ||| myTabbed ||| myFloat ||| myAccordion)
   where
     myTiled' =
@@ -227,25 +238,38 @@ myKeys conf@(XConfig{XMonad.modMask = modifier}) =
         , ((modifier, xK_Down), windowGo D False)
         , ((modifier, xK_f), sendMessage $ Toggle NBFULL)
         , ((modifier, xK_q), kill)
-        , ((modifier, xK_r), spawn "kill -USR1 $(pgrep redshift-gtk)") -- toggle redshift
+        , ((modifier, xK_r), spawn "pkill -USR1 redshift-gtk") -- toggle redshift
         , ((modifier, xK_v), spawn "pavucontrol")
+        , ((modifier, xK_i), spawn "networkmanager_dmenu")
         , ((modifier, xK_x), spawn "rofi -show p -modi \"p:$HOME/.local/bin/rofi-power-menu --choices=reboot/suspend/shutdown/logout --confirm=\" -matching normal -only-match")
-        , --  p:rofi-power-menu
-          ((modifier, xK_w), spawn "brave")
+        ,
+            ( (modifier, xK_d) -- dunst
+            , visualSubmap def . M.fromList $
+                let lenient key desc action = [((0, key), (desc, spawn action)), ((modifier, key), (desc, spawn action))]
+                 in concat
+                        [ lenient xK_x "close all notifications" "dunstctl close-all"
+                        , lenient xK_d "close all notifications" "dunstctl close-all"
+                        , lenient xK_space "action" "dunstctl action"
+                        , lenient xK_c "context" "dunstctl context"
+                        ]
+            )
+        , ((modifier, xK_c), spawn "CM_LAUNCHER=rofi clipmenu -i")
+        , ((modifier, xK_w), spawn "brave")
         , ((modifier, xK_b), spawn "xfce4-power-manager --customize")
         , ((modifier, xK_Escape), spawn "xkill")
         , ((modifier, xK_Return), spawn "cpulimit --limit=90 kitty")
         , ((modifier, xK_h), sendMessage Shrink)
         , ((modifier, xK_l), sendMessage Expand)
-        , -- , ((modifier, xK_p), shellPrompt myXPConfig)
-          ((modifier, xK_p), spawn "rofi -show drun")
+        , ((modifier, xK_y), spawn "polybar-msg cmd toggle")
+        , ((modifier, xK_g), sendMessage ToggleStruts)
+        , ((modifier, xK_p), spawn "rofi -show run")
         , -- SUPER + SHIFT KEYS
 
           ((modifier .|. shiftMask, xK_Return), spawn "thunar") -- file manager
-        , ((modifier .|. shiftMask, xK_r), spawn "xmonad --recompile && xmonad --restart && notify-send restarted!")
+        , ((modifier .|. shiftMask, xK_r), spawn "xmonad --recompile && xmonad --restart && notify-send --app-name=xmonad restarted!")
         , -- CONTROL + ALT KEYS
 
-          ((controlMask .|. mod1Mask, xK_o), spawn "$HOME/.config/xmonad/scripts/picom-toggle.sh") -- toggle picom
+          ((controlMask .|. mod1Mask, xK_o), spawn "~/.config/picom/toggle-picom.fish") -- toggle picom
         , ((0, xK_Print), spawn "flameshot gui")
         , -- Mute microphone
           ((0, xF86XK_AudioMicMute), spawn "amixer -q set Capture toggle")
@@ -260,7 +284,7 @@ myKeys conf@(XConfig{XMonad.modMask = modifier}) =
         , -- Decrease brightness
           ((0, xF86XK_MonBrightnessDown), spawn "xbacklight -perceived -dec 3")
         , -- toggle touch screen
-          ((0, xF86XK_Display), spawn "xinput $(xinput list-props 9 | rg 'Device Enabled' | cut -d':' -f2 | sd '\\s' '' | sd 1 disable | sd 0 enable) 9")
+          ((0, xF86XK_Display), spawn "~/.config/xmonad/scripts/touch-screen toggle")
         , -- Increase brightness
           -- , ((0, xF86XK_MonBrightnessUp),  spawn $ "brightnessctl s 5%+")
 
@@ -280,7 +304,8 @@ myKeys conf@(XConfig{XMonad.modMask = modifier}) =
           ((modifier .|. shiftMask, xK_space), setLayout $ XMonad.layoutHook conf)
         , -- Push window back into tiling.
           ((modifier, xK_t), withFocused $ windows . W.sink)
-        , ((modifier, xK_m), spawn $ terminalCommand "btm")
+        , ((modifier, xK_m), windows W.focusMaster)
+        , ((modifier .|. shiftMask, xK_m), windows W.swapMaster)
         ]
             ++
             -- mod-[1..9, 0] Switch to workspace N
@@ -294,11 +319,11 @@ myKeys conf@(XConfig{XMonad.modMask = modifier}) =
                 ]
             ]
 
-myConfig =
+myConfig bus =
     myBaseConfig
         { startupHook = myStartupHook
         , layoutHook = myLayout
-        , manageHook = manageSpawn <+> myManageHook <+> manageHook myBaseConfig
+        , manageHook = manageFocus myFocusHook <> manageSpawn <> myManageHook <> manageHook myBaseConfig
         , modMask = myModifier
         , borderWidth = myBorderWidth
         , handleEventHook = handleEventHook myBaseConfig
@@ -309,22 +334,28 @@ myConfig =
         , keys = myKeys
         , mouseBindings = myMouseBindings
         , terminal = myTerminal
-        -- , logHook = eventLogHookForPolyBar
+        , logHook = dynamicLogWithPP (myLogHook bus)
         }
   where
-    eventLogHookForPolyBar = do
-        winset <- gets windowset
-        windowTitle <- maybe (return "") (fmap show . getName) . W.peek $ winset
-        let currWs = W.currentTag winset
-        let wss = map W.tag $ W.workspaces winset
+    myLogHook :: D.Client -> PP
+    myLogHook dbus =
+        def
+            { ppOutput = dbusOutput dbus
+            , ppSep = " : "
+            }
 
-        io $ appendFile "/tmp/.xmonad-title-log" (windowTitle ++ "\n")
-        io $ appendFile "/tmp/.xmonad-workspace-log" (wsStr currWs wss ++ "\n")
+    -- Emit a DBus signal on log updates
+    dbusOutput :: D.Client -> String -> IO ()
+    dbusOutput dbus str = do
+        let signal =
+                (D.signal objectPath interfaceName memberName)
+                    { D.signalBody = [D.toVariant $ T.unpack $ (!! 1) $ T.splitOn " : " $ T.pack $ UTF8.decodeString str]
+                    }
+        D.emit dbus signal
       where
-        fmt currWs ws
-            | currWs == ws = "[" ++ ws ++ "]"
-            | otherwise = " " ++ ws ++ " "
-        wsStr currWs wss = join $ map (fmt currWs) $ sortBy (compare `on` (!! 0)) wss
+        objectPath = D.objectPath_ "/org/xmonad/Log"
+        interfaceName = D.interfaceName_ "org.xmonad.Log"
+        memberName = D.memberName_ "Update"
 
 myXmobarPP :: PP
 myXmobarPP =
@@ -374,15 +405,33 @@ myXPConfig =
         , sorter = fuzzySort
         }
 
-with2DNavigation :: XConfig a -> XConfig a
-with2DNavigation = withNavigation2DConfig def
-
 main :: IO ()
 main = do
-    -- forM_ [".xmonad-workspace-log", ".xmonad-title-log"] $ \file -> safeSpawn "mkfifo" ["/tmp/" ++ file]
+    dbus <- D.connectSession -- Request access to the DBus name
+    _ <-
+        D.requestName
+            dbus
+            (D.busName_ "org.xmonad.Log")
+            [D.nameAllowReplacement, D.nameReplaceExisting, D.nameDoNotQueue]
     xmonad
         . ewmhFullscreen
         . ewmh
+        . docks
+        . withUrgencyHookC FocusHook UrgencyConfig{suppressWhen = Focused, remindWhen = Dont}
+        . withSB polybar
         . pagerHints
-        . with2DNavigation
-        $ myConfig
+        . withNavigation2DConfig myNavigation2DConfig
+        $ myConfig dbus
+  where
+    polybar = statusBarGeneric "~/.config/polybar/launch.sh" mempty
+    myNavigation2DConfig =
+        def
+            { layoutNavigation =
+                [ ("Full", centerNavigation)
+                , ("Tabbed", centerNavigation)
+                ]
+            , unmappedWindowRect =
+                [ ("Full", fullScreenRect)
+                , ("Tabbed", singleWindowRect)
+                ]
+            }
