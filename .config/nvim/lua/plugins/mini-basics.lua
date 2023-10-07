@@ -46,7 +46,10 @@ return {
             vim.g.codeium_enabled = not enabled
         end
         vim.keymap.del({ "n" }, prefix .. "C")
-        vim.keymap.set({ "n" }, prefix .. ",C", toggle_codeium, { desc = "Toggle 'Codeium'" })
+        vim.keymap.set({ "n" }, prefix .. "C", toggle_codeium, { desc = "Toggle 'Codeium'" })
+        vim.keymap.set({ "n" }, prefix .. "u", function()
+            require("symbol-usage").toggle()
+        end, { desc = "Toggle symbol usage" })
 
         vim.keymap.del({ "n" }, prefix .. "h")
         vim.keymap.set({ "n" }, prefix .. "h", function()

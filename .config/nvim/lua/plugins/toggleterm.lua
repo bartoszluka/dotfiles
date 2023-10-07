@@ -8,4 +8,5 @@ return {
             direction = "float",
         })
     end,
+    keys = { { "<C-t>" } },
 }

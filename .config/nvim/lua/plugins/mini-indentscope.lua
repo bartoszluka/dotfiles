@@ -25,6 +25,7 @@ return {
         nx.au({
             "FileType",
             pattern = {
+                "cs",
                 "haskell",
                 "python",
             },

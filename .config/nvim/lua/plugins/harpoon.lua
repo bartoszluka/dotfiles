@@ -20,23 +20,32 @@ return {
                 mark_branch = false,
             },
         })
-        local map = function(lhs, rhs, desc)
-            vim.keymap.set("n", lhs, rhs, { desc = desc })
-        end
-        map("<leader>sm", "<cmd>Telescope harpoon marks<CR>", "search marks (harpoon)")
-        map("<leader>ja", require("harpoon.mark").add_file, "harpoon: add file")
-        map("<leader>ju", require("harpoon.ui").toggle_quick_menu, "harpoon: toggle quick menu")
-        map("<c-e>", require("harpoon.ui").toggle_quick_menu, "harpoon: toggle quick menu")
-        map("<leader>jf", function()
-            require("harpoon.ui").nav_file(1)
-        end, "harpoon: go to file 1")
-        map("<leader>jd", function()
-            require("harpoon.ui").nav_file(2)
-        end, "harpoon: go to file 2")
-        map("<leader>js", function()
-            require("harpoon.ui").nav_file(3)
-        end, "harpoon: go to file 3")
-        map("<leader>jn", require("harpoon.ui").nav_next, "harpoon: navigate next")
-        map("<leader>jp", require("harpoon.ui").nav_prev, "harpoon: navigate prev")
+        nx.map({ "<leader>sm", "<cmd>Telescope harpoon marks<CR>", desc = "search marks (harpoon)" })
+        nx.map({ "<leader>ja", require("harpoon.mark").add_file, desc = "harpoon: add file" })
+        nx.map({ "<leader>ju", require("harpoon.ui").toggle_quick_menu, desc = "harpoon: toggle quick menu" })
+        nx.map({ "<leader>j<leader>", require("harpoon.ui").toggle_quick_menu, desc = "harpoon: toggle quick menu" })
+        nx.map({
+            "<leader>jf",
+            function()
+                require("harpoon.ui").nav_file(1)
+            end,
+            desc = "harpoon: go to file 1",
+        })
+        nx.map({
+            "<leader>jd",
+            function()
+                require("harpoon.ui").nav_file(2)
+            end,
+            desc = "harpoon: go to file 2",
+        })
+        nx.map({
+            "<leader>js",
+            function()
+                require("harpoon.ui").nav_file(3)
+            end,
+            desc = "harpoon: go to file 3",
+        })
+        nx.map({ "<leader>jn", require("harpoon.ui").nav_next, desc = "harpoon: navigate next" })
+        nx.map({ "<leader>jp", require("harpoon.ui").nav_prev, desc = "harpoon: navigate prev" })
     end,
 }

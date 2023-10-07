@@ -9,6 +9,7 @@ return {
                 cancel = {},
                 jump_close = { "o", "<CR>" }, -- jump to the diagnostic and close the list
             },
+            auto_jump = { "lsp_references", "lsp_definitions" },
         })
         local trouble_open = function()
             local ok, trouble = pcall(require, "trouble")
@@ -47,13 +48,12 @@ return {
     ft = { "qf" },
     event = { "DiagnosticChanged" },
     keys = {
-        -- Lua
-        { "<leader>tt", "<cmd>TroubleToggle<cr>",                       { silent = true, noremap = true } },
+        { "<leader>tt", "<cmd>TroubleToggle<cr>", { silent = true, noremap = true } },
         { "<leader>tw", "<cmd>TroubleToggle workspace_diagnostics<cr>", { silent = true, noremap = true } },
-        { "<leader>td", "<cmd>TroubleToggle document_diagnostics<cr>",  { silent = true, noremap = true } },
-        { "<leader>tl", "<cmd>TroubleToggle loclist<cr>",               { silent = true, noremap = true } },
-        { "<leader>tq", "<cmd>TroubleToggle quickfix<cr>",              { silent = true, noremap = true } },
-        { "gr",         "<cmd>TroubleToggle lsp_references<cr>",        { silent = true, noremap = true } },
-        { "gd",         "<cmd>TroubleToggle lsp_definitions<cr>",       { silent = true, noremap = true } },
+        { "<leader>td", "<cmd>TroubleToggle document_diagnostics<cr>", { silent = true, noremap = true } },
+        { "<leader>tl", "<cmd>TroubleToggle loclist<cr>", { silent = true, noremap = true } },
+        { "<leader>tq", "<cmd>TroubleToggle quickfix<cr>", { silent = true, noremap = true } },
+        { "gr", "<cmd>TroubleToggle lsp_references<cr>", { silent = true, noremap = true } },
+        { "gd", "<cmd>TroubleToggle lsp_definitions<cr>", { silent = true, noremap = true } },
     },
 }

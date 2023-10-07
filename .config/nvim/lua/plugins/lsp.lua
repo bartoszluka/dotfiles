@@ -1,5 +1,6 @@
 return {
     {
+        event = { "BufReadPre", "BufNewFile" },
         "tamago324/nlsp-settings.nvim", -- A plugin to configure Neovim LSP using json/yaml files
         opts = {
             config_home = vim.fn.stdpath("config") .. "/nlsp-settings",
@@ -10,8 +11,11 @@ return {
         },
     },
     {
+        event = { "BufReadPre", "BufNewFile" },
         "neovim/nvim-lspconfig", -- Collection of configurations for built-in LSP client
+        dependencies = { "Decodetalkers/csharpls-extended-lsp.nvim" },
         config = function()
+            vim.lsp.set_log_level(vim.lsp.log_levels.ERROR)
             local servers = require("my.lsp").servers
             local on_attach = require("my.lsp").on_attach
             local capabilities = require("my.lsp").capabilities
@@ -29,7 +33,6 @@ return {
             local runtime_path = vim.split(package.path, ";", {})
             table.insert(runtime_path, "lua/?.lua")
             table.insert(runtime_path, "lua/?/init.lua")
-            table.insert(runtime_path, "lua/?/?.lua")
 
             require("lspconfig").lua_ls.setup({
                 on_attach = on_attach,
@@ -54,14 +57,36 @@ return {
                     },
                 },
             })
+            require("lspconfig").csharp_ls.setup({
+                -- cmd = {
+                --     "/home/bartek/repos/csharp-language-server/src/CSharpLanguageServer/out/CSharpLanguageServer",
+                -- },
+                on_attach = on_attach,
+                capabilities = capabilities,
+                root_dir = require("lspconfig.util").root_pattern(
+                    -- "*.sln", sln removed because it screws up with one work project
+                    -- "*.fsproj",
+                    ".git"
+                ),
+                handlers = {
+                    ["textDocument/definition"] = require("csharpls_extended").handler,
+                },
+                settings = {
+                    csharp = {
+                        loglevel = "log",
+                    },
+                },
+            })
         end,
     },
     {
+        event = { "BufReadPre", "BufNewFile" },
         "williamboman/mason.nvim", -- Manage external editor tooling i.e LSP servers
         config = true,
     },
     {
+        event = { "BufReadPre", "BufNewFile" },
         "williamboman/mason-lspconfig.nvim", -- Automatically install language servers to stdpath
-        config = { ensure_installed = require("my.lsp").servers },
+        opts = { ensure_installed = require("my.lsp").servers },
     },
 }

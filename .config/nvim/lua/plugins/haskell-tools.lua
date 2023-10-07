@@ -6,10 +6,11 @@ return {
         "nvim-telescope/telescope.nvim", -- optional
         "hrsh7th/cmp-nvim-lsp",
     },
+    branch = "1.x.x",
     ft = { "haskell", "lhaskell", "cabal" },
     config = function()
         local ht = require("haskell-tools")
-        ht.setup({
+        ht.start_or_attach({
             hls = {
                 on_attach = require("my.lsp").on_attach,
                 capabilities = require("my.lsp").capabilities,

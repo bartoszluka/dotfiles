@@ -1,8 +1,9 @@
 return {
     "L3MON4D3/LuaSnip",
+    lazy = true,
     -- Snippet Engine and Snippet Expansion
+
     dependencies = {
-        "saadparwaiz1/cmp_luasnip",
         "rafamadriz/friendly-snippets",
     },
     config = function()

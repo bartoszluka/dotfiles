@@ -13,7 +13,7 @@ return {
             switchSlot = "<C-q>",
             editMacro = "cq",
             yankMacro = "yq",     -- also decodes it for turning macros to mappings
-            addBreakPoint = "##", -- NOTE: this should be a string you don't use in insert mode during a macro
+            addBreakPoint = "!!", -- NOTE: this should be a string you don't use in insert mode during a macro
         },
         -- clears all macros-slots on startup
         clear = false,

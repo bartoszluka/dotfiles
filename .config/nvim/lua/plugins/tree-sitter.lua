@@ -2,14 +2,36 @@ return {
     "nvim-treesitter/nvim-treesitter",
     dependencies = {
         "nvim-treesitter/nvim-treesitter-textobjects", -- Additional textobjects for treesitter
+        {
+            "andymass/vim-matchup",
+            config = function()
+                -- may set any options here
+                vim.g.matchup_matchparen_offscreen = { method = "popup" }
+            end,
+        },
+        "windwp/nvim-ts-autotag",
     },
+    event = { "BufReadPost", "BufNewFile" },
+    build = ":TSUpdate",
     config = function()
         -- [[ Configure Treesitter ]]
         -- See `:help nvim-treesitter`
+        local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+        parser_config.fsharp = {
+            install_info = {
+                url = "https://github.com/Nsidorenco/tree-sitter-fsharp",
+                branch = "develop",
+                files = { "src/scanner.cc", "src/parser.c" },
+                generate_requires_npm = true,
+                requires_generate_from_grammar = true,
+            },
+            filetype = "fsharp",
+        }
         require("nvim-treesitter.configs").setup({
             -- Add languages to be installed here that you want installed for treesitter
             ensure_installed = {
                 "bash",
+                "elm",
                 "fish",
                 "haskell",
                 "help",
@@ -34,6 +56,11 @@ return {
                     node_incremental = "<c-space>",
                     node_decremental = "<c-backspace>",
                 },
+            },
+            matchup = {
+                enable = true,
+                disable_virtual_text = true,
+                include_match_words = true,
             },
             textobjects = {
                 move = {
@@ -66,6 +93,7 @@ return {
                     },
                 },
             },
+            autotag = { enable = true },
         })
     end,
 }

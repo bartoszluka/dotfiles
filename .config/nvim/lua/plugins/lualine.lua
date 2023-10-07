@@ -1,6 +1,7 @@
 return {
     -- See `:help lualine.txt`
     "nvim-lualine/lualine.nvim",
+    enabled = false,
     dependencies = {
         "nvim-tree/nvim-web-devicons",
         { "jcdickinson/wpm.nvim", enabled = false, config = true },
@@ -44,6 +45,7 @@ return {
         return {
             options = {
                 theme = "nord",
+                -- theme = "auto",
                 component_separators = "|",
                 section_separators = "",
                 globalstatus = true,
@@ -54,6 +56,9 @@ return {
                         "alpha",
                         "TelescopePrompt",
                     },
+                },
+                refresh = {
+                    statusline = 100,
                 },
             },
             sections = {
@@ -156,6 +161,9 @@ return {
                 "quickfix",
                 "fugitive",
                 "toggleterm",
+                "trouble",
+                "lazy",
+                "neo-tree",
             },
         }
     end,

@@ -6,22 +6,31 @@ return {
         "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
         "MunifTanjim/nui.nvim",
     },
+    cmd = "Neotree",
     keys = {
         { "<leader>e", "<cmd>Neotree toggle<CR>", desc = "file explorer" },
     },
-    config = function()
-        -- Unless you are still migrating, remove the deprecated commands from v1.x
+    deactivate = function()
+        vim.cmd([[Neotree close]])
+    end,
+    init = function()
         vim.g.neo_tree_remove_legacy_commands = 1
-        -- If you want icons for diagnostic errors, you'll need to define them somewhere:
-
+        if vim.fn.argc() == 1 then
+            local arg = vim.loop.fs_stat(vim.fn.argv(0))
+            if arg and arg.type == "directory" then
+                require("neo-tree")
+            end
+        end
+    end,
+    config = function()
         require("neo-tree").setup({
             close_if_last_window = true, -- Close Neo-tree if it is the last window left in the tab
             popup_border_style = "rounded",
             enable_git_status = true,
             enable_diagnostics = true,
             open_files_do_not_replace_types = { "terminal", "trouble", "qf" }, -- when opening files, do not use windows containing these filetypes or buftypes
-            sort_case_insensitive = false,                                     -- used when sorting files and directories in the tree
-            sort_function = nil,                                               -- use a custom function for sorting files and directories in the tree
+            sort_case_insensitive = false, -- used when sorting files and directories in the tree
+            sort_function = nil, -- use a custom function for sorting files and directories in the tree
             -- sort_function = function (a,b)
             --       if a.type == b.type then
             --           return a.path > b.path
@@ -34,15 +43,7 @@ return {
                     enable_character_fade = true,
                 },
                 indent = {
-                    indent_size = 2,
-                    padding = 1, -- extra padding on left hand side
-                    -- indent guides
-                    with_markers = true,
-                    indent_marker = "│",
-                    last_indent_marker = "└",
-                    highlight = "NeoTreeIndentMarker",
-                    -- expander config, needed for nesting files
-                    with_expanders = nil, -- if nil and file nesting is enabled, will enable expanders
+                    with_expanders = true, -- if nil and file nesting is enabled, will enable expanders
                     expander_collapsed = "",
                     expander_expanded = "",
                     expander_highlight = "NeoTreeExpander",
@@ -68,7 +69,7 @@ return {
                 git_status = {
                     symbols = {
                         -- Change type
-                        added = "",    -- or "✚", but this is redundant info if you use git_status_colors on the name
+                        added = "", -- or "✚", but this is redundant info if you use git_status_colors on the name
                         modified = "", -- or "", but this is redundant info if you use git_status_colors on the name
                         deleted = "✖", -- this can only be used in the git_status source
                         renamed = "", -- this can only be used in the git_status source
@@ -166,9 +167,9 @@ return {
                         --".null-ls_*",
                     },
                 },
-                follow_current_file = true,             -- This will find and focus the file in the active buffer every
+                follow_current_file = true, -- This will find and focus the file in the active buffer every
                 -- time the current file is changed while the tree is open.
-                group_empty_dirs = true,                -- when true, empty folders will be grouped together
+                group_empty_dirs = true, -- when true, empty folders will be grouped together
                 hijack_netrw_behavior = "open_default", -- netrw disabled, opening a directory opens neo-tree
                 -- in whatever position is specified in window.position
                 -- "open_current",  -- netrw disabled, opening a directory opens within the
@@ -202,7 +203,7 @@ return {
             buffers = {
                 follow_current_file = true, -- This will find and focus the file in the active buffer every
                 -- time the current file is changed while the tree is open.
-                group_empty_dirs = true,    -- when true, empty folders will be grouped together
+                group_empty_dirs = true, -- when true, empty folders will be grouped together
                 show_unloaded = true,
                 window = {
                     mappings = {

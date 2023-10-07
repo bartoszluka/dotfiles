@@ -1,5 +1,6 @@
 return {
     "lewis6991/hover.nvim",
+    enabled = false,
     config = function()
         local hover = require("hover")
         hover.setup({

@@ -5,8 +5,6 @@ return {
     },
     opts = {
         width = 120,
-        buffers = {
-            colors = { blend = -0.2 },
-        },
+        buffers = { colors = { blend = -0.2 } },
     },
 }

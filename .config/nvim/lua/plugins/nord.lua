@@ -1,9 +1,4 @@
 return {
-    -- "savq/melange-nvim",
-    -- priority = 1000,
-    -- config = function()
-    --     vim.cmd("colorscheme melange")
-    -- end,
     "gbprod/nord.nvim",
     priority = 1000,
     config = function()

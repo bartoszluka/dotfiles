@@ -9,7 +9,10 @@ return {
             require("nvim-autopairs").setup({})
         end,
     },
-    { "nvim-treesitter/playground", cmd = "TSPlaygroundToggle" },
+    {
+        "nvim-treesitter/playground",
+        cmd = "TSPlaygroundToggle",
+    },
     {
         "folke/which-key.nvim",
         config = true,
@@ -30,5 +33,12 @@ return {
     {
         "j-hui/fidget.nvim",
         config = true,
+        tag = "legacy",
     },
+    {
+        "numtostr/BufOnly.nvim",
+        keys = { { "<leader>bo", "<cmd>BufOnly<CR>", desc = "remove all buffers but this one" } },
+        cmd = "BufOnly",
+    },
+    { "mong8se/actually.nvim" },
 }

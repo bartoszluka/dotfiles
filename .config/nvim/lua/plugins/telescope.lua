@@ -72,7 +72,7 @@ return {
         local builtin = require("telescope.builtin")
 
         nx.map({
-            { "<leader>s/",       builtin.current_buffer_fuzzy_find, desc = "/ search in current buffer" },
+            { "<leader>s/", builtin.current_buffer_fuzzy_find, desc = "/ search in current buffer" },
             {
                 "<leader>sf",
                 function()
@@ -80,21 +80,18 @@ return {
                 end,
                 desc = "search files",
             },
-            { "<leader>sh",       builtin.help_tags,                 desc = "search help" },
-            { "<leader>sw",       builtin.grep_string,               desc = "search current word" },
-            { "<leader>sg",       builtin.live_grep,                 desc = "search by grep" },
-            { "<leader>sd",       builtin.diagnostics,               desc = "search diagnostics" },
-            { "<leader>sr",       builtin.oldfiles,                  desc = "search recent" },
-            { "<leader>sl",       telescope.extensions.lazy.lazy,    desc = "search lazy.nvim" },
-            { "<leader><leader>", builtin.commands,                  desc = "commands" },
-            { "<leader>sc",       builtin.command_history,           desc = "search command history" },
-            {
-                "<leader>sp",
-                function()
-                    require("telescope.builtin").find_files({ cwd = "~/.config/nvim/lua/plugins" })
-                end,
-                desc = "search plugins",
-            }, -- find plugin files
+            { "<leader>sh", builtin.help_tags, desc = "search help" },
+            { "<leader>sw", builtin.grep_string, desc = "search current word" },
+            { "<leader>sg", builtin.live_grep, desc = "search by grep" },
+            { "<leader>sd", builtin.diagnostics, desc = "search diagnostics" },
+            { "<leader>sr", builtin.oldfiles, desc = "search recent" },
+            { "<leader>sl", telescope.extensions.lazy.lazy, desc = "search lazy.nvim" },
+            { "<leader><leader>", builtin.commands, desc = "commands" },
+            { "<leader>sc", builtin.command_history, desc = "search command history" },
+            { "<leader>sk", builtin.keymaps, desc = "search keymaps" },
+            { "<leader>ss", builtin.lsp_document_symbols, desc = "search symbols (file)" },
+            { "<leader>sS", builtin.lsp_dynamic_workspace_symbols, desc = "search symbols (project)" },
         })
     end,
+    keys = { { "<leader>s" } },
 }

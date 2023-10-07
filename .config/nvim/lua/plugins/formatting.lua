@@ -1,5 +1,6 @@
 return {
     "stevearc/conform.nvim",
+    cmd = "ConformInfo",
     keys = {
         {
             "<leader>f",
@@ -12,8 +13,8 @@ return {
             desc = "Format file",
         },
     },
-    opts = function()
-        return {
+    config = function()
+        require("conform").setup({
             formatters_by_ft = {
                 lua = { "stylua" },
                 -- Conform will run multiple formatters sequentially
@@ -22,13 +23,28 @@ return {
                 javascript = { { "prettierd", "prettier" } },
                 kotlin = { "ktfmt" },
                 fish = { "fish_indent" },
-                xml = { "xmlformat" },
+                xml = { "my_xmlformat" },
                 sh = { "shfmt" },
                 c = { "clang_format" },
-                csharp = { "csharpier" },
+                cs = { "csharpier" },
+                fsharp = { "fantomas" },
             },
 
             formatters = {
+                fantomas = {
+                    command = "fantomas",
+                    args = { "$FILENAME" },
+                    stdin = false,
+                },
+                my_xmlformat = {
+                    command = "xmlformat",
+                    args = {
+                        "--selfclose",
+                        "--indent",
+                        "4",
+                        "-",
+                    },
+                },
                 ktfmt = {
                     command = "java",
                     stdin = false,
@@ -43,9 +59,8 @@ return {
                     command = "dotnet",
                     args = { "csharpier" },
                     stdin = true,
-                    cwd = require("conform.util").root_file({ ".csharpierrc.yaml", "*.sln" }),
                 },
             },
-        }
+        })
     end,
 }

@@ -1,5 +1,7 @@
 return {
     "goolord/alpha-nvim",
+    event = "VimEnter",
+    enabled = false,
     config = function()
         local max_width = 55
         local hl1 = "String"
@@ -117,13 +119,13 @@ return {
         local quick_link_btns = {
             type = "group",
             val = {
-                { type = "text",    val = "quick links", opts = { hl = hl1, position = "center" } },
+                { type = "text", val = "quick links", opts = { hl = hl1, position = "center" } },
                 { type = "padding", val = 1 },
 
                 button("p", "  Find project", "<cmd>Telescope projects<CR>"),
                 button(
                     "f",
-                    "  Find file",
+                    "󰮗  Find file",
                     "<cmd>lua require('telescope').extensions.smart_open.smart_open({ cwd_only = true })<CR>"
                 ),
                 button("r", "  Recently used files", "<cmd>Telescope oldfiles<CR>"),
@@ -138,12 +140,13 @@ return {
         local config_btns = {
             type = "group",
             val = {
-                { type = "text",    val = "configs", opts = { hl = hl1, position = "center" } },
+                { type = "text", val = "configs", opts = { hl = hl1, position = "center" } },
                 { type = "padding", val = 1 },
-                button("c", "  Neovim config", "<cmd>edit $MYVIMRC <CR>"),
-                button("x", "  xmonad config", "<cmd>edit $HOME/.config/xmonad/src/xmonad.hs<CR>"),
+                button("c", "  neovim", "<cmd>edit $MYVIMRC <CR>"),
+                button("x", "  xmonad", "<cmd>edit ~/.config/xmonad/src/xmonad.hs<CR>"),
+                button("b", "  polybar", "<cmd>edit ~/.config/polybar/config.ini<CR>"),
                 button("s", "  fish", "<cmd>edit ~/.config/fish/config.fish<CR>"),
-                button("i", "  Kitty", "<cmd>edit ~/.config/kitty/kitty.conf<CR>"),
+                button("i", "  kitty", "<cmd>edit ~/.config/kitty/kitty.conf<CR>"),
             },
             opts = {
                 position = "center",
